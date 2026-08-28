@@ -1,0 +1,22 @@
+Data
+- Prev i just got x random indexes inside of shakespeare and generated the next z tokens
+- How do i do it now? Pick x poems and generate the whole thing?
+- Alternatively i can merge ALL of the poems together and train that way?
+
+---> i might need a tokeniser after all
+
+
+
+Training:
+
+step 1)
+Dont differentiate between title and poem. Keep as one long string you generate
+
+step 2)
+Put in token to differentiate between title and poem (could just be | or other unused single token)
+
+step 3)
+Find a way to not generate the poem title (since this is not part of it) --> maybe this is fine actually?
+
+step 4)
+Find a way to insert the genre somewhere
