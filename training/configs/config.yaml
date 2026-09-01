@@ -1,0 +1,16 @@
+
+#model
+model:
+  learning_rate: 0.005
+  batch_size: 5
+
+#tokenizer
+tokenizer:
+  title_start: "<title>"
+  title_end: "</title>"
+  poem_start: "<poem>"
+  poem_end: "</poem>"
+
+#input
+data:
+  data_path: "data/processed/trial_processed.csv"

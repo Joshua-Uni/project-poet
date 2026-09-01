@@ -1,22 +1,16 @@
-Data
-- Prev i just got x random indexes inside of shakespeare and generated the next z tokens
-- How do i do it now? Pick x poems and generate the whole thing?
-- Alternatively i can merge ALL of the poems together and train that way?
+To do:
+- I need a good tokenizer (should be outside dataloader also)
 
----> i might need a tokeniser after all
+- Split dataloader so i have train and test sets! + seeds
 
 
+Eventually
+- Insert Genre somewhere into training (token at beggining?)
 
-Training:
 
-step 1)
-Dont differentiate between title and poem. Keep as one long string you generate
 
-step 2)
-Put in token to differentiate between title and poem (could just be | or other unused single token)
+Other Notes:
+- the data is compromised? Missing spaces occasionally --> might need to try a new dataset 
+and if you need to make your own labels via a separate llm
 
-step 3)
-Find a way to not generate the poem title (since this is not part of it) --> maybe this is fine actually?
-
-step 4)
-Find a way to insert the genre somewhere
+- Potentially drop non-english characters / poems
