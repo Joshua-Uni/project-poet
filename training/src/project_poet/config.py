@@ -18,6 +18,8 @@ class Tokenizer:
 @dataclass
 class Data:
     data_path: str
+    seed: int
+    val_ratio: float
 
 
 @dataclass

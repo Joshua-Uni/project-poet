@@ -1,7 +1,10 @@
 To do:
+
 - I need a good tokenizer (should be outside dataloader also)
 
-- Split dataloader so i have train and test sets! + seeds
+
+
+
 
 
 Eventually

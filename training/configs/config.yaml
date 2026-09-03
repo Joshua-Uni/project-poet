@@ -14,3 +14,5 @@ tokenizer:
 #input
 data:
   data_path: "data/processed/trial_processed.csv"
+  seed: 7899
+  val_ratio: 0.2

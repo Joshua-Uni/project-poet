@@ -11,26 +11,46 @@ from project_poet.config import CFG
 PAD_ID = 0 #Eventually get this from somewhere else
 
 def get_dataloaders(cfg: CFG):
+    #Get data and split
+    raw_df = pd.read_csv(cfg.data.data_path)
+    train, val = split_dataframe(raw_df, cfg)
 
-    raw_data = pd.read_csv(cfg.data.data_path)
-    encode, decode = get_tokenizer(raw_data)
+    #Get Encoder
+    encode, decode = get_tokenizer(train)
 
-    #Tokenize raw data and put into lists
+    #Build Sequences
+    train_seq, val_seq = build_sequences(train, encode, cfg), build_sequences(val, encode, cfg)
+    
+    #Make Dataloaders
+    train_dataloader, val_dataloader = build_dataloader(train_seq, cfg, shuffle=True), build_dataloader(val_seq, cfg, shuffle=False)
+
+    return train_dataloader, val_dataloader
+
+
+
+def split_dataframe(df, cfg: CFG):
+    val = df.sample(frac=cfg.data.val_ratio, random_state=cfg.data.seed)
+    train = df.drop(val.index)
+
+    return train, val
+
+
+
+def build_sequences(df, encode, cfg: CFG):
     sequences = []
-    for title, poem in zip(raw_data["Title"], raw_data["Poem"]):
+    for title, poem in zip(df["Title"], df["Poem"]):
         text = (
                 f"{cfg.tokenizer.title_start}{title}{cfg.tokenizer.title_end}"
                 f"{cfg.tokenizer.poem_start}{poem}{cfg.tokenizer.poem_end}"
             )
-
         sequences.append(encode(text))
-    
-    #make dataset
+    return sequences
+
+
+
+def build_dataloader(sequences, cfg, shuffle: bool):
     dataset = PoemDataset(sequences)
-
-    #make dataloader
-    ds_loader = DataLoader(dataset, batch_size = cfg.model.batch_size, shuffle=True, collate_fn=collate_fn)
-
+    ds_loader = DataLoader(dataset, batch_size = cfg.model.batch_size, shuffle=shuffle, collate_fn=collate_fn)
     return ds_loader
 
 
