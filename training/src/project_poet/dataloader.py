@@ -4,27 +4,27 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 
-from project_poet.tokenizer import get_tokenizer
+from project_poet.tokenizer import PoemTokenizer, get_tokenizer
 from project_poet.config import CFG
 
-
-PAD_ID = 0 #Eventually get this from somewhere else
 
 def get_dataloaders(cfg: CFG):
     #Get data and split
     raw_df = pd.read_csv(cfg.data.data_path)
     train, val = split_dataframe(raw_df, cfg)
 
-    #Get Encoder
-    encode, decode = get_tokenizer(train)
+    #Get tokenizer
+    tokenizer = get_tokenizer(train, cfg)
 
     #Build Sequences
-    train_seq, val_seq = build_sequences(train, encode, cfg), build_sequences(val, encode, cfg)
-    
-    #Make Dataloaders
-    train_dataloader, val_dataloader = build_dataloader(train_seq, cfg, shuffle=True), build_dataloader(val_seq, cfg, shuffle=False)
+    train_seq, val_seq = build_sequences(train, tokenizer), build_sequences(val, tokenizer)
 
-    return train_dataloader, val_dataloader
+    #Make Dataloaders
+    collate = make_collate_fn(tokenizer.pad_id)
+    train_dataloader = build_dataloader(train_seq, cfg, shuffle=True, collate_fn=collate)
+    val_dataloader = build_dataloader(val_seq, cfg, shuffle=False, collate_fn=collate)
+
+    return train_dataloader, val_dataloader, tokenizer
 
 
 
@@ -36,21 +36,16 @@ def split_dataframe(df, cfg: CFG):
 
 
 
-def build_sequences(df, encode, cfg: CFG):
-    sequences = []
-    for title, poem in zip(df["Title"], df["Poem"]):
-        text = (
-                f"{cfg.tokenizer.title_start}{title}{cfg.tokenizer.title_end}"
-                f"{cfg.tokenizer.poem_start}{poem}{cfg.tokenizer.poem_end}"
-            )
-        sequences.append(encode(text))
-    return sequences
+def build_sequences(df, tokenizer: PoemTokenizer):
+    return [
+        tokenizer.encode_example(title, poem)
+        for title, poem in zip(df["Title"], df["Poem"])
+    ]
 
 
-
-def build_dataloader(sequences, cfg, shuffle: bool):
+def build_dataloader(sequences, cfg, shuffle: bool, collate_fn):
     dataset = PoemDataset(sequences)
-    ds_loader = DataLoader(dataset, batch_size = cfg.model.batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    ds_loader = DataLoader(dataset, batch_size=cfg.model.batch_size, shuffle=shuffle, collate_fn=collate_fn)
     return ds_loader
 
 
@@ -69,13 +64,16 @@ class PoemDataset(Dataset):
 
 
 
-def collate_fn(batch):
-    x = [seq[:-1] for seq in batch]
-    y = [seq[1:] for seq in batch]
+def make_collate_fn(pad_id: int):
+    def collate_fn(batch):
+        x = [seq[:-1] for seq in batch]
+        y = [seq[1:] for seq in batch]
 
-    x = pad_sequence(x, batch_first=True, padding_value=PAD_ID)
-    y = pad_sequence(y, batch_first=True, padding_value=-100)
+        x = pad_sequence(x, batch_first=True, padding_value=pad_id)
+        y = pad_sequence(y, batch_first=True, padding_value=-100)
 
-    pad_mask = (x == PAD_ID)
+        pad_mask = x == pad_id
 
-    return x, y, pad_mask
+        return x, y, pad_mask
+
+    return collate_fn

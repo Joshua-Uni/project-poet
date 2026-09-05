@@ -9,6 +9,8 @@ class Model:
 
 @dataclass
 class Tokenizer:
+    vocab_size: int
+    save_path: str
     title_start: str
     title_end: str
     poem_start: str

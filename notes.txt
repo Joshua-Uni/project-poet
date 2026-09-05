@@ -1,6 +1,6 @@
 To do:
+- Start building model
 
-- I need a good tokenizer (should be outside dataloader also)
 
 
 
@@ -9,7 +9,7 @@ To do:
 
 Eventually
 - Insert Genre somewhere into training (token at beggining?)
-
+- Make your own tokenizer?
 
 
 Other Notes:
