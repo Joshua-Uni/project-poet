@@ -1,6 +1,5 @@
 To do:
-- Start building model
-
+- Make proper model + wire to configs
 
 
 
@@ -10,6 +9,7 @@ To do:
 Eventually
 - Insert Genre somewhere into training (token at beggining?)
 - Make your own tokenizer?
+- dont remake tokenizer every time --> tokenizer_trian.py
 
 
 Other Notes:

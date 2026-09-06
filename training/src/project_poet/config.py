@@ -1,10 +1,15 @@
 import yaml
 from dataclasses import dataclass
+import torch
+
+
 
 @dataclass 
 class Model:
     learning_rate: float
     batch_size: int
+    embedding_dim: int
+
 
 
 @dataclass
@@ -17,6 +22,7 @@ class Tokenizer:
     poem_end: str
 
 
+
 @dataclass
 class Data:
     data_path: str
@@ -24,11 +30,13 @@ class Data:
     val_ratio: float
 
 
+
 @dataclass
 class CFG:
     model: Model
     tokenizer: Tokenizer
     data: Data
+
 
 
 def get_config(config_path):
@@ -40,3 +48,12 @@ def get_config(config_path):
               data=Data(**raw_cfg["data"]))
     
     return cfg
+
+
+
+def get_device() -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
