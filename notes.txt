@@ -1,6 +1,7 @@
 To do:
-- Make proper model + wire to configs
-
+- put global vars in cfg --> pass cfg to model
+- find good block_size and implement in dataloader too
+- Implement Padding correctly
 
 
 
@@ -10,10 +11,10 @@ Eventually
 - Insert Genre somewhere into training (token at beggining?)
 - Make your own tokenizer?
 - dont remake tokenizer every time --> tokenizer_trian.py
+- init_weights bit
 
 
 Other Notes:
 - the data is compromised? Missing spaces occasionally --> might need to try a new dataset 
 and if you need to make your own labels via a separate llm
-
 - Potentially drop non-english characters / poems

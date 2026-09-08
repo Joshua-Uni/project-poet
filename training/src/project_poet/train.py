@@ -32,7 +32,9 @@ def train_one_epoch(model: nn.Module,
         batch_tokens = int((yb != -100).sum())
         total += loss.item() * batch_tokens
         n_tokens += batch_tokens
+        print(loss.item())
     return total / n_tokens
+
 
 
 if __name__ == "__main__":
@@ -44,6 +46,7 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     opt = torch.optim.Adam(model.parameters(), lr=cfg.model.learning_rate)
 
+    x, y, pad = next(iter(train_dataloader))
     for e in range(3):
         train_loss = train_one_epoch(model, train_dataloader, opt, loss_fn, device)
         print(train_loss)
