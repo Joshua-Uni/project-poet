@@ -17,7 +17,7 @@ def get_dataloaders(cfg: CFG):
     tokenizer = get_tokenizer(train, cfg)
 
     #Build Sequences
-    train_seq, val_seq = build_sequences(train, tokenizer), build_sequences(val, tokenizer)
+    train_seq, val_seq = build_sequences(train, tokenizer, cfg.model.max_block_size), build_sequences(val, tokenizer, cfg.model.max_block_size)
 
     #Make Dataloaders
     collate = make_collate_fn(tokenizer.pad_id)
@@ -36,11 +36,12 @@ def split_dataframe(df, cfg: CFG):
 
 
 
-def build_sequences(df, tokenizer: PoemTokenizer):
-    return [
-        tokenizer.encode_example(title, poem)
+def build_sequences(df, tokenizer: PoemTokenizer, max_block_size):
+    seq = [
+        tokenizer.encode_example(title, poem)[:max_block_size] #MAX BLOCK SIZE IMPLEMENTED HERE!!!
         for title, poem in zip(df["Title"], df["Poem"])
     ]
+    return seq
 
 
 def build_dataloader(sequences, cfg, shuffle: bool, collate_fn):
@@ -68,7 +69,6 @@ def make_collate_fn(pad_id: int):
     def collate_fn(batch):
         x = [seq[:-1] for seq in batch]
         y = [seq[1:] for seq in batch]
-
         x = pad_sequence(x, batch_first=True, padding_value=pad_id)
         y = pad_sequence(y, batch_first=True, padding_value=-100)
 

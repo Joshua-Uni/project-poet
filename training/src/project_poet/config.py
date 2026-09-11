@@ -9,6 +9,11 @@ class Model:
     learning_rate: float
     batch_size: int
     embedding_dim: int
+    max_block_size: int
+    n_layers: int
+    n_head: int
+    head_size: int
+    dropout: float
 
 
 

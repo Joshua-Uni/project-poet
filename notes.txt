@@ -1,6 +1,4 @@
 To do:
-- put global vars in cfg --> pass cfg to model
-- find good block_size and implement in dataloader too
 - Implement Padding correctly
 
 

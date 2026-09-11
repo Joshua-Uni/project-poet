@@ -5,23 +5,17 @@ import torch.nn.functional as F
 from project_poet.config import CFG
 
 ### DONT FORGET TO PUT THESE IN CONFIG
-N_EMBD = 16
-DROPOUT = 0.2
-N_HEAD = 2
-HEAD_SIZE = 8
-MAX_BLOCK_SIZE = 9000
-N_LAYERS = 2
 
 
 
 class FeedForward(nn.Module):
-    def __init__(self):
+    def __init__(self, cfg: CFG):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(N_EMBD, N_EMBD*4), #B,T,C*4
+            nn.Linear(cfg.model.embedding_dim, cfg.model.embedding_dim*4), #B,T,C*4
             nn.ReLU(),
-            nn.Linear(4* N_EMBD, N_EMBD), #B,T,C
-            nn.Dropout(DROPOUT)
+            nn.Linear(4* cfg.model.embedding_dim, cfg.model.embedding_dim), #B,T,C
+            nn.Dropout(cfg.model.dropout)
         )
     
     def forward(self, x):
@@ -31,14 +25,14 @@ class FeedForward(nn.Module):
 
 
 class Head(nn.Module):
-    def __init__(self, head_size):
+    def __init__(self, cfg: CFG):
         super().__init__()    
-        self.key = nn.Linear(N_EMBD, head_size)
-        self.query = nn.Linear(N_EMBD, head_size)
-        self.value = nn.Linear(N_EMBD, head_size)
+        self.key = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
+        self.query = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
+        self.value = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
 
-        self.register_buffer('tril', torch.tril(torch.ones(MAX_BLOCK_SIZE, MAX_BLOCK_SIZE))) #Below Spine == 1 else 0
-        self.dropout = nn.Dropout(DROPOUT)
+        self.register_buffer('tril', torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size))) #Below Spine == 1 else 0
+        self.dropout = nn.Dropout(cfg.model.dropout)
     
     def forward(self, x):
         B,T,C = x.shape
@@ -57,11 +51,11 @@ class Head(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self):
+    def __init__(self, cfg: CFG):
         super().__init__()
-        self.heads = nn.ModuleList([Head(HEAD_SIZE) for _ in range(N_HEAD)])
-        self.proj = nn.Linear(HEAD_SIZE*N_HEAD, N_EMBD)
-        self.dropout = nn.Dropout(DROPOUT)
+        self.heads = nn.ModuleList([Head(cfg) for _ in range(cfg.model.n_head)])
+        self.proj = nn.Linear(cfg.model.head_size*cfg.model.n_head, cfg.model.embedding_dim)
+        self.dropout = nn.Dropout(cfg.model.dropout)
 
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim=-1) #N_HEAD {B,T,Hs} concats across HS --> B,T,N_HEAD*HS
@@ -71,13 +65,13 @@ class MultiHeadAttention(nn.Module):
 
 
 class Block(nn.Module):
-    def __init__(self):
+    def __init__(self, cfg: CFG):
         # n_embd: embedding dimension, n_head: the number of heads we'd like
         super().__init__()
-        self.self_attention = MultiHeadAttention()
-        self.ffwd = FeedForward()
-        self.ln1 = nn.LayerNorm(N_EMBD)
-        self.ln2 = nn.LayerNorm(N_EMBD)
+        self.self_attention = MultiHeadAttention(cfg)
+        self.ffwd = FeedForward(cfg)
+        self.ln1 = nn.LayerNorm(cfg.model.embedding_dim)
+        self.ln2 = nn.LayerNorm(cfg.model.embedding_dim)
 
     def forward(self, x):
         x = x + self.self_attention(self.ln1(x))
@@ -89,9 +83,10 @@ class Block(nn.Module):
 class PoetTransformer(nn.Module):
     def __init__(self, cfg: CFG, vocab_size: int):
         super().__init__()
+
         self.token_embedding = nn.Embedding(vocab_size, cfg.model.embedding_dim)
-        self.position_embedding = nn.Embedding(MAX_BLOCK_SIZE, cfg.model.embedding_dim)
-        self.blocks = nn.Sequential(*[Block() for _ in range(N_LAYERS)])
+        self.position_embedding = nn.Embedding(cfg.model.max_block_size, cfg.model.embedding_dim)
+        self.blocks = nn.Sequential(*[Block(cfg) for _ in range(cfg.model.n_layers)])
         self.ln_f = nn.LayerNorm(cfg.model.embedding_dim) # final layer norm
         self.lm_head = nn.Linear(cfg.model.embedding_dim, vocab_size)
     

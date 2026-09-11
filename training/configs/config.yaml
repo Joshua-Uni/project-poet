@@ -4,6 +4,12 @@ model:
   learning_rate: 0.005
   batch_size: 5
   embedding_dim: 16
+  max_block_size: 768
+  n_layers: 2
+  n_head: 2
+  head_size: 8
+  dropout: 0.2
+
 
 #tokenizer
 tokenizer:
