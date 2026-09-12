@@ -14,10 +14,12 @@ Sun
 
 
 
+
+
+
 Eventually
 - Insert Genre somewhere into training (token at beggining?)
 - Make your own tokenizer?
-- dont remake tokenizer every time --> tokenizer_trian.py
 - init_weights bit
 - Implement Padding correctly --> do i need pad's?
 - Only send part of cfg to model?

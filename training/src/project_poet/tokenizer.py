@@ -57,7 +57,7 @@ def _train_texts(df):
         yield str(poem)
 
 
-def get_tokenizer(train_df, cfg: CFG) -> PoemTokenizer:
+def train_tokenizer(train_df, cfg: CFG) -> PoemTokenizer:
     specials = [
         PAD_TOKEN,
         cfg.tokenizer.title_start,

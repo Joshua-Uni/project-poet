@@ -4,7 +4,7 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 
-from project_poet.tokenizer import PoemTokenizer, get_tokenizer
+from project_poet.tokenizer import PoemTokenizer
 from project_poet.config import CFG
 
 
@@ -14,7 +14,6 @@ def get_dataloaders(cfg: CFG):
     train, val = split_dataframe(raw_df, cfg)
 
     #Get tokenizer
-    #tokenizer = get_tokenizer(train, cfg)
     tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
 
     #Build Sequences

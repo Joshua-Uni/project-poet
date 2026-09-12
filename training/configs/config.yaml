@@ -13,7 +13,7 @@ model:
 
 #tokenizer
 tokenizer:
-  vocab_size: 4000
+  vocab_size: 3500
   save_path: "artifacts/tokenizer.json"
   title_start: "<title>"
   title_end: "</title>"
