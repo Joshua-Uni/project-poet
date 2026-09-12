@@ -14,7 +14,8 @@ def get_dataloaders(cfg: CFG):
     train, val = split_dataframe(raw_df, cfg)
 
     #Get tokenizer
-    tokenizer = get_tokenizer(train, cfg)
+    #tokenizer = get_tokenizer(train, cfg)
+    tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
 
     #Build Sequences
     train_seq, val_seq = build_sequences(train, tokenizer, cfg.model.max_block_size), build_sequences(val, tokenizer, cfg.model.max_block_size)

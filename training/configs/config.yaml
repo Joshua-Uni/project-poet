@@ -2,12 +2,12 @@
 #model
 model:
   learning_rate: 0.005
-  batch_size: 5
-  embedding_dim: 16
+  batch_size: 10
+  embedding_dim: 64
   max_block_size: 768
-  n_layers: 2
-  n_head: 2
-  head_size: 8
+  n_layers: 3
+  n_head: 4
+  head_size: 16
   dropout: 0.2
 
 

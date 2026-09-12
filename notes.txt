@@ -1,5 +1,14 @@
 To do:
-- Implement Padding correctly
+Sat
+- dont remake tokenizer every time --> tokenizer_trian.py
+
+- Model save / load (epochs, cfg e.t.c.)
+- have option in cfg for loading model during train + name
+- eval.py with a small poem generation
+
+Sun
+- Start on hosting api
+
 
 
 
@@ -10,6 +19,8 @@ Eventually
 - Make your own tokenizer?
 - dont remake tokenizer every time --> tokenizer_trian.py
 - init_weights bit
+- Implement Padding correctly --> do i need pad's?
+- Only send part of cfg to model?
 
 
 Other Notes:
