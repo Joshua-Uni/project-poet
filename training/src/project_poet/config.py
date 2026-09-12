@@ -6,7 +6,10 @@ import torch
 
 @dataclass 
 class Model:
+    model_path: str
+    resume: bool
     learning_rate: float
+    epochs: int
     batch_size: int
     embedding_dim: int
     max_block_size: int
