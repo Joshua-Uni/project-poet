@@ -1,0 +1,23 @@
+[project]
+name = "poet_api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    # Web layer
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    # Inference core (needed to load + run the model)
+    "torch==2.13.0",
+    "tokenizers==0.22.1",
+    "PyYAML==6.0.2",
+    # The training package provides the model, tokenizer, and load code.
+    # Installed editable via: pip install -e training
+    "project_poet",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
