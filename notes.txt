@@ -1,8 +1,4 @@
 To do:
-Mon
-- Start on hosting api (start a branch!)
-
-
 
 API To DO:
 - Start with the lifespan + model loading
