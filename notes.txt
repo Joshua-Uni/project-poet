@@ -1,7 +1,6 @@
 To do:
-
-API To DO:
-- Start with the lifespan + model loading
+- Get a router which loads the model and tokenizer and can give something back to you (just a word even)
+- Fix above e.g. errors, actual response models, actual services for generate, 
 
 
 
@@ -26,3 +25,4 @@ Training To Do:
 
 
 API To Do:
+- read how to merge git and github branches
