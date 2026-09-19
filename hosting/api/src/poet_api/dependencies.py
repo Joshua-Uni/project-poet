@@ -1,37 +1,40 @@
 from typing import Annotated
 import torch
-from fastapi import Depends, Request
+from fastapi import Depends, Request, HTTPException
 
 from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
+from project_poet.config import CFG
 
 
 
+def _require(value, name: str):
+    if value is None:
+        raise HTTPException(status_code=503, detail=f"{name} not loaded")
+    return value
 
 
 def get_model(req: Request) -> PoetTransformer:
     model = getattr(req.app.state, "model", None)
-    if model is None:
-        raise ValueError("hi", model)
-
-    return model
+    return _require(model, "model")
 
 
 def get_tokenizer(req: Request) -> PoemTokenizer:
     tokenizer = getattr(req.app.state, "tokenizer", None)
-    if tokenizer is None:
-        raise ValueError("ayy")
-    return tokenizer
+    return _require(tokenizer, "tokenizer")
 
 
 def get_device(request: Request) -> torch.device:
     device = getattr(request.app.state, "device", None)
-    if device is None:
-        raise ValueError("gotta fix this")
-    return device
+    return _require(device, "device")
+
+def get_cfg(request: Request) -> CFG:
+    cfg = getattr(request.app.state, "cfg", None)
+    return _require(cfg, "config")
 
 
 ModelDep = Annotated[PoetTransformer, Depends(get_model)]
 TokenizerDep = Annotated[PoemTokenizer, Depends(get_tokenizer)]
 DeviceDep = Annotated[torch.device, Depends(get_device)]
+cfgDep = Annotated[CFG, Depends(get_cfg)]
 
