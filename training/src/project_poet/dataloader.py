@@ -8,13 +8,13 @@ from project_poet.tokenizer import PoemTokenizer
 from project_poet.config import CFG
 
 
-def get_dataloaders(cfg: CFG):
+def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None):
     #Get data and split
     raw_df = pd.read_csv(cfg.data.data_path)
     train, val = split_dataframe(raw_df, cfg)
 
-    #Get tokenizer
-    tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
+    if tokenizer is None:
+        tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
 
     #Build Sequences
     train_seq, val_seq = build_sequences(train, tokenizer, cfg.model.max_block_size), build_sequences(val, tokenizer, cfg.model.max_block_size)

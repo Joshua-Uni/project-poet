@@ -7,10 +7,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import os
-from pathlib import Path
 
 from project_poet.config import get_device
-from project_poet.tokenizer import PoemTokenizer
 
 from poet_api.services.load import get_model_and_config
 from poet_api.routers import health, generate
@@ -23,12 +21,12 @@ async def lifespan(app: FastAPI):
     device = get_device()
     ckpt_path = os.getenv("POET_CKPT_PATH", "artifacts/ckpt.pt")
 
-    model, cfg = get_model_and_config(ckpt_path, device)
+    model, tokenizer, cfg = get_model_and_config(ckpt_path, device)
     model.eval()
 
-    default_tokenizer = str(Path(ckpt_path).parent / "tokenizer.json")
-    tokenizer_path = os.getenv("POET_TOKENIZER_PATH", default_tokenizer)
-    tokenizer = PoemTokenizer.load(tokenizer_path, cfg.tokenizer)
+    #default_tokenizer = str(Path(ckpt_path).parent / "tokenizer.json")
+    #tokenizer_path = os.getenv("POET_TOKENIZER_PATH", default_tokenizer)
+    #tokenizer = PoemTokenizer.load(tokenizer_path, cfg.tokenizer)
 
     app.state.model = model
     app.state.device = device

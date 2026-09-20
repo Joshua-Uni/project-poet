@@ -4,7 +4,7 @@ model:
   model_path: "artifacts/ckpt.pt"
   resume: True #Load model and keep training or replace?
   learning_rate: 0.01
-  epochs: 30
+  epochs: 5
   batch_size: 10
   embedding_dim: 64
   max_block_size: 768
@@ -27,4 +27,4 @@ tokenizer:
 data:
   data_path: "data/processed/trial_processed.csv"
   seed: 7899
-  val_ratio: 0.50
+  val_ratio: 0.1

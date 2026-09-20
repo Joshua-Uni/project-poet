@@ -47,15 +47,19 @@ class CFG:
 
 
 
+def cfg_from_dict(raw_cfg: dict) -> CFG:
+    return CFG(
+        model=Model(**raw_cfg["model"]),
+        tokenizer=Tokenizer(**raw_cfg["tokenizer"]),
+        data=Data(**raw_cfg["data"]),
+    )
+
+
+
 def get_config(config_path):
     with open(config_path) as f:
         raw_cfg = yaml.safe_load(f)
-    
-    cfg = CFG(model=Model(**raw_cfg["model"]),
-              tokenizer=Tokenizer(**raw_cfg["tokenizer"]),
-              data=Data(**raw_cfg["data"]))
-    
-    return cfg
+    return cfg_from_dict(raw_cfg)
 
 
 
@@ -65,3 +69,9 @@ def get_device() -> torch.device:
     if torch.backends.mps.is_available():
         return torch.device("mps")
     return torch.device("cpu")
+
+
+def set_seed(seed: int) -> None:
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    

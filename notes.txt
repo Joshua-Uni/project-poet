@@ -1,26 +1,25 @@
 To do:
-
-Stream
-SSE (text/event-stream) or chunked, yielding each decoded piece from the existing loop. Do this before the frontend; retrofitting is messier.
-
-
-
+- go through and comment what's going on with the new code!
+- add a run_name which you add to ckpt_{name}.pt and {name}_tokenizer.json
 
 
 
 
 Training To Do:
-- init_weights bit
 - logging
 - pytest suite + other tests!
-- make loading and saving better!
-- - save tokenizer along with model and use that!
-- - when you load remake the model from scratch such that even if you change cfg.model.something it still works!
-- - add a run_name which you add to ckpt_{name}.pt
-- - make a different load for eval/inference and training (eval only needs model!, training needs a bunch of stuff)
+- init_weights bits
+- adam or adamw? (currently hard coded!)
+
+
+
+
 
 
 API To Do:
+- pytest + other suits
+- logging
+
 
 
 Bigger Problems:

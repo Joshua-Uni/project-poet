@@ -31,7 +31,6 @@ def train_one_epoch(model: nn.Module,
 
 def eval_one_epoch(model: nn.Module,
                    loader: DataLoader,
-                   opt: torch.optim.Optimizer,
                    loss_fn: nn.Module,
                    device: torch.device) -> float:
     model.eval()
