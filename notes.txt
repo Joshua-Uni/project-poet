@@ -1,10 +1,8 @@
 To do:
 
-3) Stream
+Stream
 SSE (text/event-stream) or chunked, yielding each decoded piece from the existing loop. Do this before the frontend; retrofitting is messier.
 
-4) One generate function
-Import from project_poet.engine or keep the API copy and delete the training one from eval — not both.
 
 
 
@@ -12,13 +10,9 @@ Import from project_poet.engine or keep the API copy and delete the training one
 
 
 Training To Do:
-- current poems dataset sucks --> replace + make your own categorisation of genre
 - init_weights bit
-- insert genre
 - logging
 - pytest suite + other tests!
-- implement temperature!
-- kv cache?
 - make loading and saving better!
 - - save tokenizer along with model and use that!
 - - when you load remake the model from scratch such that even if you change cfg.model.something it still works!
@@ -27,7 +21,8 @@ Training To Do:
 
 
 API To Do:
-- read how to merge git and github branches
-- Get the streaming response thing
-- Response Models
 
+
+Bigger Problems:
+- current poems dataset sucks --> replace + make your own categorisation of genre
+- insert genre

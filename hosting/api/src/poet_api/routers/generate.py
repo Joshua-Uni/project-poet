@@ -1,7 +1,9 @@
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 
 from poet_api.dependencies import ModelDep, TokenizerDep, DeviceDep, cfgDep
 from poet_api.schemas import GenerateRequest, GenerateResponse
+from poet_api.services.generate import stream_poem
 from project_poet.engine import generate_text
 
 router = APIRouter(tags=["Generate"])
@@ -17,7 +19,15 @@ def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg
                 break
         tokens.append(next_token)
         response.append(next_token)
-    
-
-
     return {"title": req.title, "poem": tokenizer.decode(response), "tokens": len(response) }
+
+
+
+@router.post("/generate/stream")
+def generate_stream(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: cfgDep,  device: DeviceDep):
+    return StreamingResponse(
+        stream_poem(req, model, tokenizer, cfg, device),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
