@@ -44,9 +44,9 @@ def build_sequences(df, tokenizer: PoemTokenizer, max_block_size):
     return seq
 
 
-def build_dataloader(sequences, cfg, shuffle: bool, collate_fn):
+def build_dataloader(sequences, cfg: CFG, shuffle: bool, collate_fn):
     dataset = PoemDataset(sequences)
-    ds_loader = DataLoader(dataset, batch_size=cfg.model.batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    ds_loader = DataLoader(dataset, batch_size=cfg.train.batch_size, shuffle=shuffle, collate_fn=collate_fn)
     return ds_loader
 
 

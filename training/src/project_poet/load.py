@@ -9,18 +9,15 @@ from project_poet.config import CFG, cfg_from_dict
 from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
 
-# yaml owns the run; the checkpoint owns architecture + tokenizer
-_YAML_MODEL_FIELDS = ("model_path", "resume", "epochs", "batch_size")
-
 
 def apply_yaml_run(cfg: CFG, yaml_cfg: CFG) -> CFG:
-    #Take a cfg that you loaded from checkpoint and replaces its cfg.data and cfg.model._YAML_MODEL_FIELDS
+    #Take a cfg that you loaded from checkpoint and replaces its cfg.data and cfg.train
     #with the yaml_cfg (the current config.yaml in the directory)
     #config.yaml controls the data, model_path, epochs, batch_size e.t.c. Checkpoint cfg controls model
     return replace(
         cfg,
         data=yaml_cfg.data,
-        model=replace(cfg.model, **{name: getattr(yaml_cfg.model, name) for name in _YAML_MODEL_FIELDS}),
+        train=yaml_cfg.train,
     )
 
 
@@ -34,7 +31,7 @@ def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg:
         "tokenizer": tokenizer.hf.to_str(),
         "train_loss": train_loss,
         "eval_loss": eval_loss
-    }, cfg.model.model_path)
+    }, cfg.train.model_path)
 
 
 def _load_ckpt(path: str, device):
@@ -55,6 +52,10 @@ def _rebuild(ckpt, device):
 
 
 def load_inference(path: str, device, yaml_cfg: CFG | None = None):
+    #Loads only the model, tokenizer and cfg
+    #Can pass in a yaml_cfg to update your cfg's data and train updated
+    #e.g. this is good for eval since you'll use dataloaders with the yaml_cfg batchsize
+    #unneccesary for api since only care about model
     ckpt = _load_ckpt(path, device)
     model, tokenizer, cfg = _rebuild(ckpt, device)
     if yaml_cfg is not None:
@@ -63,10 +64,12 @@ def load_inference(path: str, device, yaml_cfg: CFG | None = None):
 
 
 def load_training(yaml_cfg: CFG, device):
-    ckpt = _load_ckpt(yaml_cfg.model.model_path, device)
+    ckpt = _load_ckpt(yaml_cfg.train.model_path, device)
     model, tokenizer, cfg = _rebuild(ckpt, device)
     cfg = apply_yaml_run(cfg, yaml_cfg)
-    opt = torch.optim.Adam(model.parameters(), lr=cfg.model.learning_rate)
+    opt = torch.optim.Adam(model.parameters(), lr=cfg.train.learning_rate)
     opt.load_state_dict(ckpt["optimizer"])
+    for g in opt.param_groups:
+        g["lr"] = cfg.train.learning_rate
     start_epoch = ckpt["epoch"] + 1
     return model, opt, tokenizer, cfg, start_epoch, ckpt["train_loss"], ckpt["eval_loss"]

@@ -1,6 +1,8 @@
 To do:
-- go through and comment what's going on with the new code!
+- go through and comment what's going on with the new code! (including what resume does in the actual config.yaml as code)
 - add a run_name which you add to ckpt_{name}.pt and {name}_tokenizer.json
+
+
 
 
 
@@ -10,10 +12,6 @@ Training To Do:
 - pytest suite + other tests!
 - init_weights bits
 - adam or adamw? (currently hard coded!)
-
-
-
-
 
 
 API To Do:

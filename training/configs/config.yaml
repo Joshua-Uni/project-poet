@@ -1,11 +1,14 @@
+#If resume = True then we load old cfg artifacts/ckpt.pt
+#BUT we still use this cfg's train and data!
 
-#model
-model:
+train: #resume=true --> still used
+  resume: True
   model_path: "artifacts/ckpt.pt"
-  resume: True #Load model and keep training or replace?
   learning_rate: 0.01
   epochs: 5
   batch_size: 10
+
+model: #resume=true --> replaced with ckpt
   embedding_dim: 64
   max_block_size: 768
   n_layers: 3
@@ -13,9 +16,7 @@ model:
   head_size: 32
   dropout: 0.2
 
-
-#tokenizer
-tokenizer:
+tokenizer: #resume=true --> replaced with ckpt
   vocab_size: 3500
   save_path: "artifacts/tokenizer.json"
   title_start: "<title>"
@@ -23,8 +24,7 @@ tokenizer:
   poem_start: "<poem>"
   poem_end: "</poem>"
 
-#input
-data:
+data: #resume=true --> still used
   data_path: "data/processed/trial_processed.csv"
   seed: 7899
-  val_ratio: 0.1
+  val_ratio: 0.9

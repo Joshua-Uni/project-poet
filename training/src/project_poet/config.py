@@ -2,22 +2,23 @@ import yaml
 from dataclasses import dataclass
 import torch
 
+@dataclass 
+class Train:
+    resume: bool
+    model_path: str
+    learning_rate: float
+    epochs: int
+    batch_size: int
 
 
 @dataclass 
 class Model:
-    model_path: str
-    resume: bool
-    learning_rate: float
-    epochs: int
-    batch_size: int
     embedding_dim: int
     max_block_size: int
     n_layers: int
     n_head: int
     head_size: int
     dropout: float
-
 
 
 @dataclass
@@ -30,7 +31,6 @@ class Tokenizer:
     poem_end: str
 
 
-
 @dataclass
 class Data:
     data_path: str
@@ -38,29 +38,27 @@ class Data:
     val_ratio: float
 
 
-
 @dataclass
 class CFG:
+    train: Train
     model: Model
     tokenizer: Tokenizer
     data: Data
 
 
-
 def cfg_from_dict(raw_cfg: dict) -> CFG:
     return CFG(
+        train=Train(**raw_cfg["train"]),
         model=Model(**raw_cfg["model"]),
         tokenizer=Tokenizer(**raw_cfg["tokenizer"]),
         data=Data(**raw_cfg["data"]),
     )
 
 
-
 def get_config(config_path):
     with open(config_path) as f:
         raw_cfg = yaml.safe_load(f)
     return cfg_from_dict(raw_cfg)
-
 
 
 def get_device() -> torch.device:

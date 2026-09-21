@@ -14,7 +14,7 @@ if __name__ == "__main__":
     set_seed(yaml_cfg.data.seed)
     device = get_device()
 
-    model, tokenizer, cfg = load_inference(yaml_cfg.model.model_path, device, yaml_cfg)
+    model, tokenizer, cfg = load_inference(yaml_cfg.train.model_path, device, yaml_cfg)
 
     _, val_dataloader, tokenizer = get_dataloaders(cfg, tokenizer)
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)

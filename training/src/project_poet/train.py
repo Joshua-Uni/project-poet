@@ -16,7 +16,7 @@ if __name__ == "__main__":
     set_seed(yaml_cfg.data.seed)
     device = get_device()
 
-    if yaml_cfg.model.resume:
+    if yaml_cfg.train.resume:
         model, opt, tokenizer, cfg, start_epoch, train_loss_log, eval_loss_log = load_training(
             yaml_cfg, device
         )
@@ -25,14 +25,14 @@ if __name__ == "__main__":
         cfg = yaml_cfg
         train_dataloader, val_dataloader, tokenizer = get_dataloaders(cfg)
         model = PoetTransformer(cfg, tokenizer.vocab_size).to(device)
-        opt = torch.optim.Adam(model.parameters(), lr=cfg.model.learning_rate)
+        opt = torch.optim.Adam(model.parameters(), lr=cfg.train.learning_rate)
         start_epoch = 0
         train_loss_log = []
         eval_loss_log = []
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
 
-    for epoch in range(start_epoch, cfg.model.epochs):
+    for epoch in range(start_epoch, cfg.train.epochs):
         train_loss = train_one_epoch(model, train_dataloader, opt, loss_fn, device)
         train_loss_log.append(train_loss)
         print(train_loss)
