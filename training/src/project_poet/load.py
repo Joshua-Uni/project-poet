@@ -25,7 +25,7 @@ def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg:
     torch.save({
         "epoch": epoch,                    # last finished epoch (resume at epoch+1)
         "model": model.state_dict(),
-        "optimizer": opt.state_dict(),     # Adam’s moments; skip this and “resume” is a cold start
+        "optimizer": opt.state_dict(),     # AdamW’s moments; skip this and “resume” is a cold start
         "vocab_size": tokenizer.vocab_size,
         "cfg": asdict(cfg),    # rebuild the net with the same sizes
         "tokenizer": tokenizer.hf.to_str(),
@@ -64,10 +64,12 @@ def load_inference(path: str, device, yaml_cfg: CFG | None = None):
 
 
 def load_training(yaml_cfg: CFG, device):
+    #Loads everything needed for training (everything in a checkpoint)
+    #Replaces checkpoint configs .train and .data with yaml_cfg
     ckpt = _load_ckpt(yaml_cfg.train.model_path, device)
     model, tokenizer, cfg = _rebuild(ckpt, device)
     cfg = apply_yaml_run(cfg, yaml_cfg)
-    opt = torch.optim.Adam(model.parameters(), lr=cfg.train.learning_rate)
+    opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=0.01)
     opt.load_state_dict(ckpt["optimizer"])
     for g in opt.param_groups:
         g["lr"] = cfg.train.learning_rate

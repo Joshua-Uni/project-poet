@@ -25,7 +25,7 @@ if __name__ == "__main__":
         cfg = yaml_cfg
         train_dataloader, val_dataloader, tokenizer = get_dataloaders(cfg)
         model = PoetTransformer(cfg, tokenizer.vocab_size).to(device)
-        opt = torch.optim.Adam(model.parameters(), lr=cfg.train.learning_rate)
+        opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=0.01)
         start_epoch = 0
         train_loss_log = []
         eval_loss_log = []

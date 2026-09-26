@@ -1,6 +1,5 @@
 To do:
-- go through and comment what's going on with the new code! (including what resume does in the actual config.yaml as code)
-- add a run_name which you add to ckpt_{name}.pt and {name}_tokenizer.json
+- init_weights bits
 
 
 
@@ -10,8 +9,6 @@ To do:
 Training To Do:
 - logging
 - pytest suite + other tests!
-- init_weights bits
-- adam or adamw? (currently hard coded!)
 
 
 API To Do:
@@ -21,5 +18,6 @@ API To Do:
 
 
 Bigger Problems:
+- Full Audit --> can i move on?
 - current poems dataset sucks --> replace + make your own categorisation of genre
 - insert genre
