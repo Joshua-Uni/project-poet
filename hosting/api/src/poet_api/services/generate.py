@@ -1,4 +1,6 @@
 import json
+import logging
+import time
 
 import torch
 
@@ -8,6 +10,8 @@ from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
 
 from poet_api.schemas import GenerateRequest
+
+logger = logging.getLogger(__name__)
 
 
 def _sse(payload: dict) -> str:
@@ -21,6 +25,13 @@ def stream_poem(
     cfg: CFG,
     device: torch.device,
 ):
+    started = time.perf_counter()
+    logger.info(
+        "generate stream | title %r | temp %s | max_tokens %s",
+        req.title,
+        req.temperature,
+        req.max_tokens,
+    )
     tokens = (
         [tokenizer.title_start_id]
         + tokenizer.encode(req.title)
@@ -38,4 +49,7 @@ def stream_poem(
         response.append(next_token)
         yield _sse({"poem": tokenizer.decode(response)})
 
+    poem = tokenizer.decode(response)
+    logger.info("generate stream done | tokens %s | %.2fs", len(response), time.perf_counter() - started)
+    logger.debug("generate stream | poem\n%s", poem)
     yield _sse({"done": True, "tokens": len(response)})

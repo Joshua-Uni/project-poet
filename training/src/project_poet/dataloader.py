@@ -1,5 +1,6 @@
 import torch
 import pandas as pd
+import logging
 
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
@@ -7,17 +8,34 @@ from torch.nn.utils.rnn import pad_sequence
 from project_poet.tokenizer import PoemTokenizer
 from project_poet.config import CFG
 
+logger = logging.getLogger(__name__)
 
 def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None):
     #Get data and split
     raw_df = pd.read_csv(cfg.data.data_path)
     train, val = split_dataframe(raw_df, cfg)
 
+
     if tokenizer is None:
         tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
+        tokenizer_source = cfg.tokenizer.save_path
+    else:
+        tokenizer_source = "caller"
 
     #Build Sequences
     train_seq, val_seq = build_sequences(train, tokenizer, cfg.model.max_block_size), build_sequences(val, tokenizer, cfg.model.max_block_size)
+
+    logger.info(
+        "data %s | rows %s | train %s | val %s | batch %s | block %s | vocab %s | tokenizer %s",
+        cfg.data.data_path,
+        len(raw_df),
+        len(train_seq),
+        len(val_seq),
+        cfg.train.batch_size,
+        cfg.model.max_block_size,
+        tokenizer.vocab_size,
+        tokenizer_source,
+    )
 
     #Make Dataloaders
     collate = make_collate_fn(tokenizer.pad_id)

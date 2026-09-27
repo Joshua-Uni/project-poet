@@ -1,3 +1,6 @@
+import logging
+import time
+
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
@@ -6,10 +9,13 @@ from poet_api.schemas import GenerateRequest, GenerateResponse
 from poet_api.services.generate import stream_poem
 from project_poet.engine import generate_text
 
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Generate"])
 
 @router.post("/generate", response_model=GenerateResponse)
 def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: cfgDep,  device: DeviceDep):
+    started = time.perf_counter()
+    logger.info("generate | title %r | temp %s | max_tokens %s", req.title, req.temperature, req.max_tokens)
     response = []
     tokens = [tokenizer.title_start_id] + tokenizer.encode(req.title) + [tokenizer.title_end_id, tokenizer.poem_start_id]
 
@@ -19,7 +25,11 @@ def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg
                 break
         tokens.append(next_token)
         response.append(next_token)
-    return {"title": req.title, "poem": tokenizer.decode(response), "tokens": len(response) }
+
+    poem = tokenizer.decode(response)
+    logger.info("generate done | tokens %s | %.2fs", len(response), time.perf_counter() - started)
+    logger.debug("generate | poem\n%s", poem)
+    return {"title": req.title, "poem": poem, "tokens": len(response) }
 
 
 

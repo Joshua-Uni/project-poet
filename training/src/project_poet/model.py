@@ -1,20 +1,21 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import logging
 
 from project_poet.config import CFG
 
-### DONT FORGET TO PUT THESE IN CONFIG
-
-
+logger = logging.getLogger(__name__)
 
 class FeedForward(nn.Module):
     def __init__(self, cfg: CFG):
         super().__init__()
+        out_proj = nn.Linear(4 * cfg.model.embedding_dim, cfg.model.embedding_dim) #B,T,C
+        out_proj.is_residual_proj = True
         self.net = nn.Sequential(
             nn.Linear(cfg.model.embedding_dim, cfg.model.embedding_dim*4), #B,T,C*4
             nn.ReLU(),
-            nn.Linear(4* cfg.model.embedding_dim, cfg.model.embedding_dim), #B,T,C
+            out_proj,
             nn.Dropout(cfg.model.dropout)
         )
     
@@ -55,6 +56,7 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.heads = nn.ModuleList([Head(cfg) for _ in range(cfg.model.n_head)])
         self.proj = nn.Linear(cfg.model.head_size*cfg.model.n_head, cfg.model.embedding_dim)
+        self.proj.is_residual_proj = True
         self.dropout = nn.Dropout(cfg.model.dropout)
 
     def forward(self, x):
@@ -89,7 +91,21 @@ class PoetTransformer(nn.Module):
         self.blocks = nn.Sequential(*[Block(cfg) for _ in range(cfg.model.n_layers)])
         self.ln_f = nn.LayerNorm(cfg.model.embedding_dim) # final layer norm
         self.lm_head = nn.Linear(cfg.model.embedding_dim, vocab_size)
-    
+
+        self.n_layers = cfg.model.n_layers
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            std = 0.02
+            if getattr(module, "is_residual_proj", False):
+                std = 0.02 / (2 * self.n_layers) ** 0.5
+            nn.init.normal_(module.weight, mean=0.0, std=std)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
     def forward(self, idx, targets=None):
         B, T = idx.shape
 

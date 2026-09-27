@@ -6,6 +6,7 @@ import torch
 class Train:
     resume: bool
     model_path: str
+    log_lvl: str
     learning_rate: float
     epochs: int
     batch_size: int

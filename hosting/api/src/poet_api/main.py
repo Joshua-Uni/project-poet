@@ -1,5 +1,5 @@
-# Optional paths (defaults: artifacts/ckpt.pt and tokenizer.json next to the ckpt):
-#   POET_CKPT_PATH=... POET_TOKENIZER_PATH=... uvicorn poet_api.main:app --reload
+# Optional env (defaults: artifacts/ckpt.pt, log level INFO):
+#   POET_CKPT_PATH=... POET_LOG_LEVEL=INFO uvicorn poet_api.main:app --reload
 # Interactive API docs once running:
 #   Swagger UI -> http://127.0.0.1:8000/docs
 #   ReDoc      -> http://127.0.0.1:8000/redoc
@@ -7,32 +7,33 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import os
+import logging
 
 from project_poet.config import get_device
 
 from poet_api.services.load import get_model_and_config
 from poet_api.routers import health, generate
+from poet_api.logging import setup_logging
 
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #Get model, cfg and tokenizer
+    setup_logging(os.getenv("POET_LOG_LEVEL", "INFO"))
+
     device = get_device()
     ckpt_path = os.getenv("POET_CKPT_PATH", "artifacts/ckpt.pt")
-
     model, tokenizer, cfg = get_model_and_config(ckpt_path, device)
     model.eval()
-
-    #default_tokenizer = str(Path(ckpt_path).parent / "tokenizer.json")
-    #tokenizer_path = os.getenv("POET_TOKENIZER_PATH", default_tokenizer)
-    #tokenizer = PoemTokenizer.load(tokenizer_path, cfg.tokenizer)
+    logger.info("api ready | block %s", cfg.model.max_block_size)
 
     app.state.model = model
     app.state.device = device
     app.state.tokenizer = tokenizer
     app.state.cfg = cfg
     yield
+    logger.info("api shutdown")
     app.state.model = None
 
 

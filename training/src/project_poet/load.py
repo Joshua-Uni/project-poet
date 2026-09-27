@@ -1,3 +1,4 @@
+import logging
 import torch
 import torch.nn as nn
 
@@ -8,6 +9,8 @@ from tokenizers import Tokenizer as HfTokenizer
 from project_poet.config import CFG, cfg_from_dict
 from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
+
+logger = logging.getLogger(__name__)
 
 
 def apply_yaml_run(cfg: CFG, yaml_cfg: CFG) -> CFG:
@@ -32,11 +35,13 @@ def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg:
         "train_loss": train_loss,
         "eval_loss": eval_loss
     }, cfg.train.model_path)
+    logger.info("saved checkpoint | epoch %s | %s", epoch, cfg.train.model_path)
 
 
 def _load_ckpt(path: str, device):
     #Returns the loaded Checkpoint
     if not Path(path).exists():
+        logger.error("checkpoint not found: %s", path)
         raise FileNotFoundError("Model ckpt not found!")
     return torch.load(path, map_location=device)
 
@@ -60,6 +65,7 @@ def load_inference(path: str, device, yaml_cfg: CFG | None = None):
     model, tokenizer, cfg = _rebuild(ckpt, device)
     if yaml_cfg is not None:
         cfg = apply_yaml_run(cfg, yaml_cfg)
+    logger.info("loaded checkpoint | %s | vocab %s | device %s", path, tokenizer.vocab_size, device)
     return model, tokenizer, cfg
 
 
@@ -74,4 +80,11 @@ def load_training(yaml_cfg: CFG, device):
     for g in opt.param_groups:
         g["lr"] = cfg.train.learning_rate
     start_epoch = ckpt["epoch"] + 1
+    logger.info(
+        "resume | %s | next epoch %s | lr %s | vocab %s",
+        yaml_cfg.train.model_path,
+        start_epoch,
+        cfg.train.learning_rate,
+        tokenizer.vocab_size,
+    )
     return model, opt, tokenizer, cfg, start_epoch, ckpt["train_loss"], ckpt["eval_loss"]

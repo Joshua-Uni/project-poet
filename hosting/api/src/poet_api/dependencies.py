@@ -1,4 +1,5 @@
 from typing import Annotated
+import logging
 import torch
 from fastapi import Depends, Request, HTTPException
 
@@ -6,10 +7,12 @@ from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
 from project_poet.config import CFG
 
+logger = logging.getLogger(__name__)
 
 
 def _require(value, name: str):
     if value is None:
+        logger.warning("%s not loaded", name)
         raise HTTPException(status_code=503, detail=f"{name} not loaded")
     return value
 

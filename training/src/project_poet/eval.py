@@ -1,18 +1,23 @@
 from pathlib import Path
+import logging
 import torch.nn as nn
 
 from project_poet.dataloader import get_dataloaders
 from project_poet.config import get_config, get_device, set_seed
 from project_poet.engine import eval_one_epoch, generate_text
 from project_poet.load import load_inference
+from project_poet.logging import setup_logging
 
+logger = logging.getLogger(__name__)
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "config.yaml"
 
 
 if __name__ == "__main__":
     yaml_cfg = get_config(CONFIG_PATH)
+    setup_logging(yaml_cfg.train.log_lvl)
     set_seed(yaml_cfg.data.seed)
     device = get_device()
+    logger.info("eval | device %s | ckpt %s", device, yaml_cfg.train.model_path)
 
     model, tokenizer, cfg = load_inference(yaml_cfg.train.model_path, device, yaml_cfg)
 
@@ -20,10 +25,11 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
 
     eval_loss = eval_one_epoch(model, val_dataloader, loss_fn, device)
-    print(eval_loss)
+    logger.info("val loss %.4f", eval_loss)
 
     title = "The Dark Night"
     temp = 1.2
+    logger.info("sample | title %r | temp %s", title, temp)
     tokens = [tokenizer.title_start_id] + tokenizer.encode(title) + [tokenizer.title_end_id, tokenizer.poem_start_id]
     response = []
     for i in range(100):
@@ -33,4 +39,4 @@ if __name__ == "__main__":
         tokens.append(next_token)
         response.append(next_token)
 
-    print(tokenizer.decode(response))
+    logger.info("sample | tokens %s\n%s", len(response), tokenizer.decode(response))

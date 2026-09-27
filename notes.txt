@@ -1,23 +1,22 @@
 To do:
-- init_weights bits
 
-
-
-
-
-
-Training To Do:
-- logging
-- pytest suite + other tests!
-
-
-API To Do:
-- pytest + other suits
-- logging
-
-
-
-Bigger Problems:
+Part 1)
+- logging for Both
+- testing suite (not pytest)
 - Full Audit --> can i move on?
+
+
+Part 2)
 - current poems dataset sucks --> replace + make your own categorisation of genre
 - insert genre
+
+
+Part 3)
+Make Website part of this
+
+Part 4)
+Train Good Model
+
+Part 5)
+Learn AWS
+Host on AWS
