@@ -76,16 +76,19 @@ def load_training(yaml_cfg: CFG, device: torch.device) -> tuple[PoetTransformer,
     ckpt = _load_ckpt(yaml_cfg.train.model_path, device)
     model, tokenizer, cfg = _rebuild(ckpt, device)
     cfg = apply_yaml_run(cfg, yaml_cfg)
-    opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=0.01)
+    opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay)
     opt.load_state_dict(ckpt["optimizer"])
     for g in opt.param_groups:
         g["lr"] = cfg.train.learning_rate
+        g["weight_decay"] = cfg.train.weight_decay
     start_epoch = ckpt["epoch"] + 1
+    
     logger.info(
-        "resume | %s | next epoch %s | lr %s | vocab %s",
+        "resume | %s | next epoch %s | lr %s | weight_decay %s | vocab %s",
         yaml_cfg.train.model_path,
         start_epoch,
         cfg.train.learning_rate,
+        cfg.train.weight_decay,
         tokenizer.vocab_size,
     )
     return model, opt, tokenizer, cfg, start_epoch, ckpt["train_loss"], ckpt["eval_loss"]

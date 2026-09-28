@@ -19,7 +19,7 @@ def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg
     tokens = [tokenizer.title_start_id] + tokenizer.encode(req.title) + [tokenizer.title_end_id, tokenizer.poem_start_id]
 
     for i in range(req.max_tokens):
-        next_token = generate_text(model, tokens, cfg.model.max_block_size, req.temperature, device)
+        next_token = generate_text(model, tokens, cfg.model.max_block_size, req.temperature, device, req.top_k, req.top_p)
         if next_token == tokenizer.poem_end_id:
                 break
         tokens.append(next_token)

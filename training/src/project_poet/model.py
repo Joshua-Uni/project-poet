@@ -1,12 +1,9 @@
-import logging
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from project_poet.config import CFG
 
-logger = logging.getLogger(__name__)
 
 class FeedForward(nn.Module):
     def __init__(self, cfg: CFG):

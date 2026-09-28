@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
     set_seed(yaml_cfg.data.seed)
     device = get_device()
+
     logger.info(
         "train | device %s | resume %s | epochs %s | lr %s | batch %s",
         device,
@@ -39,7 +40,7 @@ if __name__ == "__main__":
         cfg = yaml_cfg
         train_dataloader, val_dataloader, tokenizer = get_dataloaders(cfg)
         model = PoetTransformer(cfg, tokenizer.vocab_size).to(device)
-        opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=0.01)
+        opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay)
         start_epoch = 0
         train_loss_log = []
         eval_loss_log = []

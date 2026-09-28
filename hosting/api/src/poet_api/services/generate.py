@@ -40,7 +40,7 @@ def stream_poem(
 
     for _ in range(req.max_tokens):
         next_token = generate_text(
-            model, tokens, cfg.model.max_block_size, req.temperature, device
+            model, tokens, cfg.model.max_block_size, req.temperature, device, req.top_k, req.top_p
         )
         if next_token == tokenizer.poem_end_id:
             break

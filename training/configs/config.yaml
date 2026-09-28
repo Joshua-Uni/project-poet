@@ -6,6 +6,7 @@ train: #resume=true --> still used
   model_path: "artifacts/ckpt.pt"
   log_lvl: INFO
   learning_rate: 0.01
+  weight_decay: 0.01 #adamW
   epochs: 5
   batch_size: 10
 

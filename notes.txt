@@ -1,25 +1,35 @@
 To do:
 
-Part 1)
-- testing suite (not pytest)
-- Full Audit --> can i move on?
-- merge git's together again
+Part 1
 
 
-Part 2)
+Part 2: Fix Data
+- merge git's together again + github merges
 - current poems dataset sucks --> replace + make your own categorisation of genre
 - insert genre
 
 
-Part 3)
-Make Website part of this
-
-Part 4)
-Train Good Model
-
-Part 5)
-Learn AWS
-Host on AWS
+Part 3: Website Building
+- CORS
+- Make Website part of this
 
 
-pytest -q && ruff check . && mypy src.
+
+Part 4: Proper Training and Quality
+- Py Tests
+- Add Gelu, merge lm_head and Token Embedding, grad clipping
+- Train Good Model
+
+
+Part 5: Hosting and Publishing
+- Learn AWS
+- Host on AWS
+- Read Me
+
+
+
+
+
+
+#ruff check training/src hosting/api/src
+#mypy training/src hosting/api/src  

@@ -57,7 +57,7 @@ def split_dataframe(df: pd.DataFrame, cfg: CFG) -> tuple[pd.DataFrame, pd.DataFr
 
 def build_sequences(df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int) -> list[list[int]]:
     seq = [
-        tokenizer.encode_example(title, poem)[:max_block_size] #MAX BLOCK SIZE IMPLEMENTED HERE!!!
+        tokenizer.encode_example(title, poem)[:max_block_size] #MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
         for title, poem in zip(df["Title"], df["Poem"])
     ]
     return seq
@@ -67,7 +67,7 @@ def build_dataloader(
     sequences: list[list[int]],
     cfg: CFG,
     shuffle: bool,
-    collate_fn: Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor, torch.Tensor]],
+    collate_fn: Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor]],
 ) -> DataLoader:
     dataset = PoemDataset(sequences)
     ds_loader = DataLoader(dataset, batch_size=cfg.train.batch_size, shuffle=shuffle, collate_fn=collate_fn)
@@ -89,15 +89,15 @@ class PoemDataset(Dataset):
 
 
 
-def make_collate_fn(pad_id: int) -> Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
-    def collate_fn(batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def make_collate_fn(pad_id: int) -> Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor]]:
+    def collate_fn(batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         seq_x = [seq[:-1] for seq in batch]
         seq_y = [seq[1:] for seq in batch]
         x = pad_sequence(seq_x, batch_first=True, padding_value=pad_id)
         y = pad_sequence(seq_y, batch_first=True, padding_value=-100)
 
-        pad_mask = x == pad_id
+        #pad_mask = x == pad_id --> no longer required!
 
-        return x, y, pad_mask
+        return x, y#, pad_mask
 
     return collate_fn
