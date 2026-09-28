@@ -1,9 +1,10 @@
-from pathlib import Path
 import logging
+from pathlib import Path
+
 import torch.nn as nn
 
-from project_poet.dataloader import get_dataloaders
 from project_poet.config import get_config, get_device, set_seed
+from project_poet.dataloader import get_dataloaders
 from project_poet.engine import eval_one_epoch, generate_text
 from project_poet.load import load_inference
 from project_poet.logging import setup_logging

@@ -1,6 +1,9 @@
-import yaml
 from dataclasses import dataclass
+from pathlib import Path
+
 import torch
+import yaml
+
 
 @dataclass 
 class Train:
@@ -56,7 +59,7 @@ def cfg_from_dict(raw_cfg: dict) -> CFG:
     )
 
 
-def get_config(config_path):
+def get_config(config_path: str | Path) -> CFG:
     with open(config_path) as f:
         raw_cfg = yaml.safe_load(f)
     return cfg_from_dict(raw_cfg)

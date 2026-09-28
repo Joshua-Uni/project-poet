@@ -1,9 +1,9 @@
 To do:
 
 Part 1)
-- logging for Both
 - testing suite (not pytest)
 - Full Audit --> can i move on?
+- merge git's together again
 
 
 Part 2)
@@ -20,3 +20,6 @@ Train Good Model
 Part 5)
 Learn AWS
 Host on AWS
+
+
+pytest -q && ruff check . && mypy src.

@@ -1,9 +1,10 @@
 import logging
-import torch
-import torch.nn as nn
-
 from dataclasses import asdict, replace
 from pathlib import Path
+from typing import Any
+
+import torch
+import torch.nn as nn
 from tokenizers import Tokenizer as HfTokenizer
 
 from project_poet.config import CFG, cfg_from_dict
@@ -24,7 +25,7 @@ def apply_yaml_run(cfg: CFG, yaml_cfg: CFG) -> CFG:
     )
 
 
-def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg: CFG, tokenizer: PoemTokenizer, train_loss: list, eval_loss: list):
+def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg: CFG, tokenizer: PoemTokenizer, train_loss: list[float], eval_loss: list[float]) -> None:
     torch.save({
         "epoch": epoch,                    # last finished epoch (resume at epoch+1)
         "model": model.state_dict(),
@@ -38,7 +39,7 @@ def save_training(epoch: int, model: nn.Module, opt: torch.optim.Optimizer, cfg:
     logger.info("saved checkpoint | epoch %s | %s", epoch, cfg.train.model_path)
 
 
-def _load_ckpt(path: str, device):
+def _load_ckpt(path: str, device: torch.device) -> dict[str, Any]:
     #Returns the loaded Checkpoint
     if not Path(path).exists():
         logger.error("checkpoint not found: %s", path)
@@ -46,7 +47,7 @@ def _load_ckpt(path: str, device):
     return torch.load(path, map_location=device)
 
 
-def _rebuild(ckpt, device):
+def _rebuild(ckpt: dict[str, Any], device: torch.device) -> tuple[PoetTransformer, PoemTokenizer, CFG]:
     #Rebuilds CFG, Tokenizer and Model from a Checkpoint
     cfg = cfg_from_dict(ckpt["cfg"])
     tokenizer = PoemTokenizer(HfTokenizer.from_str(ckpt["tokenizer"]), cfg.tokenizer)
@@ -56,7 +57,7 @@ def _rebuild(ckpt, device):
     return model, tokenizer, cfg
 
 
-def load_inference(path: str, device, yaml_cfg: CFG | None = None):
+def load_inference(path: str, device: torch.device, yaml_cfg: CFG | None = None) -> tuple[PoetTransformer, PoemTokenizer, CFG]:
     #Loads only the model, tokenizer and cfg
     #Can pass in a yaml_cfg to update your cfg's data and train updated
     #e.g. this is good for eval since you'll use dataloaders with the yaml_cfg batchsize
@@ -69,7 +70,7 @@ def load_inference(path: str, device, yaml_cfg: CFG | None = None):
     return model, tokenizer, cfg
 
 
-def load_training(yaml_cfg: CFG, device):
+def load_training(yaml_cfg: CFG, device: torch.device) -> tuple[PoetTransformer, torch.optim.Optimizer, PoemTokenizer, CFG, int, list[float], list[float]]:
     #Loads everything needed for training (everything in a checkpoint)
     #Replaces checkpoint configs .train and .data with yaml_cfg
     ckpt = _load_ckpt(yaml_cfg.train.model_path, device)

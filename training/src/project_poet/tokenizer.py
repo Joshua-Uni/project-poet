@@ -1,13 +1,15 @@
+from collections.abc import Iterator
 from pathlib import Path
 
+import pandas as pd
 from tokenizers import Tokenizer
-from tokenizers.models import BPE
-from tokenizers.trainers import BpeTrainer
-from tokenizers.pre_tokenizers import ByteLevel
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
+from tokenizers.models import BPE
+from tokenizers.pre_tokenizers import ByteLevel
+from tokenizers.trainers import BpeTrainer
 
-from project_poet.config import CFG, Tokenizer as TokenizerCfg
-
+from project_poet.config import CFG
+from project_poet.config import Tokenizer as TokenizerCfg
 
 PAD_TOKEN = "<pad>"
 
@@ -51,13 +53,13 @@ class PoemTokenizer:
         return cls(Tokenizer.from_file(path), cfg)
 
 
-def _train_texts(df):
+def _train_texts(df: pd.DataFrame) -> Iterator[str]:
     for title, poem in zip(df["Title"], df["Poem"]):
         yield str(title)
         yield str(poem)
 
 
-def train_tokenizer(train_df, cfg: CFG) -> PoemTokenizer:
+def train_tokenizer(train_df: pd.DataFrame, cfg: CFG) -> PoemTokenizer:
     specials = [
         PAD_TOKEN,
         cfg.tokenizer.title_start,

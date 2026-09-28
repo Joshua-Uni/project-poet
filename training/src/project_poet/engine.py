@@ -3,7 +3,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 
-
 def train_one_epoch(model: nn.Module,
                     loader: DataLoader,
                     opt: torch.optim.Optimizer,
@@ -51,7 +50,7 @@ def eval_one_epoch(model: nn.Module,
 
 
  
-def generate_text(model: nn.Module, text: list, max_block_size: int, temperature: float, device: torch.device):
+def generate_text(model: nn.Module, text: list[int], max_block_size: int, temperature: float, device: torch.device) -> int:
     model.eval()
 
     with torch.no_grad():
@@ -63,5 +62,5 @@ def generate_text(model: nn.Module, text: list, max_block_size: int, temperature
         #print(logits.shape)
         probs = torch.softmax(logits[0,-1,:] / temperature, dim=-1)
 
-    return torch.multinomial(probs, 1).item()
+    return int(torch.multinomial(probs, 1).item())
 

@@ -1,15 +1,15 @@
-from pathlib import Path
-import torch.nn as nn
-import torch
 import logging
+from pathlib import Path
 
+import torch
+import torch.nn as nn
 
-from project_poet.dataloader import get_dataloaders
 from project_poet.config import get_config, get_device, set_seed
-from project_poet.model import PoetTransformer
-from project_poet.engine import train_one_epoch, eval_one_epoch
-from project_poet.load import save_training, load_training
+from project_poet.dataloader import get_dataloaders
+from project_poet.engine import eval_one_epoch, train_one_epoch
+from project_poet.load import load_training, save_training
 from project_poet.logging import setup_logging
+from project_poet.model import PoetTransformer
 
 logger = logging.getLogger(__name__)
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "config.yaml"

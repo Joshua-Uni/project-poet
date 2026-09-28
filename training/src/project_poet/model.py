@@ -1,7 +1,8 @@
+import logging
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import logging
 
 from project_poet.config import CFG
 
@@ -11,7 +12,7 @@ class FeedForward(nn.Module):
     def __init__(self, cfg: CFG):
         super().__init__()
         out_proj = nn.Linear(4 * cfg.model.embedding_dim, cfg.model.embedding_dim) #B,T,C
-        out_proj.is_residual_proj = True
+        object.__setattr__(out_proj, "is_residual_proj", True)
         self.net = nn.Sequential(
             nn.Linear(cfg.model.embedding_dim, cfg.model.embedding_dim*4), #B,T,C*4
             nn.ReLU(),
@@ -19,7 +20,7 @@ class FeedForward(nn.Module):
             nn.Dropout(cfg.model.dropout)
         )
     
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         #x: B,T,C
         return self.net(x)
 
@@ -32,10 +33,11 @@ class Head(nn.Module):
         self.query = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
         self.value = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
 
+        self.tril: torch.Tensor
         self.register_buffer('tril', torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size))) #Below Spine == 1 else 0
         self.dropout = nn.Dropout(cfg.model.dropout)
     
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         B,T,C = x.shape
         k = self.key(x) #B,T,Hs
         q = self.query(x) #B,T,Hs
@@ -56,10 +58,10 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.heads = nn.ModuleList([Head(cfg) for _ in range(cfg.model.n_head)])
         self.proj = nn.Linear(cfg.model.head_size*cfg.model.n_head, cfg.model.embedding_dim)
-        self.proj.is_residual_proj = True
+        object.__setattr__(self.proj, "is_residual_proj", True)
         self.dropout = nn.Dropout(cfg.model.dropout)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = torch.cat([h(x) for h in self.heads], dim=-1) #N_HEAD {B,T,Hs} concats across HS --> B,T,N_HEAD*HS
         out = self.dropout(self.proj(out)) #B,T,N_HEAD*Hs @ N_HEAD*Hs, C --> B,T,C
         return out
@@ -75,7 +77,7 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(cfg.model.embedding_dim)
         self.ln2 = nn.LayerNorm(cfg.model.embedding_dim)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x + self.self_attention(self.ln1(x))
         x = x + self.ffwd(self.ln2(x))
         return x
@@ -95,7 +97,7 @@ class PoetTransformer(nn.Module):
         self.n_layers = cfg.model.n_layers
         self.apply(self._init_weights)
 
-    def _init_weights(self, module):
+    def _init_weights(self, module: nn.Module) -> None:
         if isinstance(module, nn.Linear):
             std = 0.02
             if getattr(module, "is_residual_proj", False):
@@ -106,10 +108,9 @@ class PoetTransformer(nn.Module):
         elif isinstance(module, nn.Embedding):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx: torch.Tensor) -> torch.Tensor:
         B, T = idx.shape
 
-        # idx and targets are both (B,T) tensor of integers
         tok_emb = self.token_embedding(idx) # (B,T,C)
         pos_emb = self.position_embedding(torch.arange(T, device=idx.device)) # (T,C)
         x = tok_emb + pos_emb # (B,T,C)

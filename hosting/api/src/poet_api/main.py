@@ -4,22 +4,23 @@
 #   Swagger UI -> http://127.0.0.1:8000/docs
 #   ReDoc      -> http://127.0.0.1:8000/redoc
 
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-import os
 import logging
+import os
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
 from project_poet.config import get_device
 
-from poet_api.services.load import get_model_and_config
-from poet_api.routers import health, generate
 from poet_api.logging import setup_logging
+from poet_api.routers import generate, health
+from poet_api.services.load import get_model_and_config
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging(os.getenv("POET_LOG_LEVEL", "INFO"))
 
     device = get_device()

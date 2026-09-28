@@ -1,16 +1,17 @@
-import torch
-import pandas as pd
 import logging
+from collections.abc import Callable
 
-from torch.utils.data import Dataset, DataLoader
+import pandas as pd
+import torch
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, Dataset
 
-from project_poet.tokenizer import PoemTokenizer
 from project_poet.config import CFG
+from project_poet.tokenizer import PoemTokenizer
 
 logger = logging.getLogger(__name__)
 
-def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None):
+def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None) -> tuple[DataLoader, DataLoader, PoemTokenizer]:
     #Get data and split
     raw_df = pd.read_csv(cfg.data.data_path)
     train, val = split_dataframe(raw_df, cfg)
@@ -46,7 +47,7 @@ def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None):
 
 
 
-def split_dataframe(df, cfg: CFG):
+def split_dataframe(df: pd.DataFrame, cfg: CFG) -> tuple[pd.DataFrame, pd.DataFrame]:
     val = df.sample(frac=cfg.data.val_ratio, random_state=cfg.data.seed)
     train = df.drop(val.index)
 
@@ -54,7 +55,7 @@ def split_dataframe(df, cfg: CFG):
 
 
 
-def build_sequences(df, tokenizer: PoemTokenizer, max_block_size):
+def build_sequences(df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int) -> list[list[int]]:
     seq = [
         tokenizer.encode_example(title, poem)[:max_block_size] #MAX BLOCK SIZE IMPLEMENTED HERE!!!
         for title, poem in zip(df["Title"], df["Poem"])
@@ -62,7 +63,12 @@ def build_sequences(df, tokenizer: PoemTokenizer, max_block_size):
     return seq
 
 
-def build_dataloader(sequences, cfg: CFG, shuffle: bool, collate_fn):
+def build_dataloader(
+    sequences: list[list[int]],
+    cfg: CFG,
+    shuffle: bool,
+    collate_fn: Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor, torch.Tensor]],
+) -> DataLoader:
     dataset = PoemDataset(sequences)
     ds_loader = DataLoader(dataset, batch_size=cfg.train.batch_size, shuffle=shuffle, collate_fn=collate_fn)
     return ds_loader
@@ -70,25 +76,25 @@ def build_dataloader(sequences, cfg: CFG, shuffle: bool, collate_fn):
 
 
 class PoemDataset(Dataset):
-    def __init__(self, sequences):
+    def __init__(self, sequences: list[list[int]]) -> None:
         self.sequences = [
             torch.tensor(seq, dtype=torch.long) for seq in sequences
         ]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.sequences)
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> torch.Tensor:
         return self.sequences[idx]
 
 
 
-def make_collate_fn(pad_id: int):
-    def collate_fn(batch):
-        x = [seq[:-1] for seq in batch]
-        y = [seq[1:] for seq in batch]
-        x = pad_sequence(x, batch_first=True, padding_value=pad_id)
-        y = pad_sequence(y, batch_first=True, padding_value=-100)
+def make_collate_fn(pad_id: int) -> Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+    def collate_fn(batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        seq_x = [seq[:-1] for seq in batch]
+        seq_y = [seq[1:] for seq in batch]
+        x = pad_sequence(seq_x, batch_first=True, padding_value=pad_id)
+        y = pad_sequence(seq_y, batch_first=True, padding_value=-100)
 
         pad_mask = x == pad_id
 

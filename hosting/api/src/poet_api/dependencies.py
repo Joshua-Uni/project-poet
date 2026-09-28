@@ -1,16 +1,18 @@
-from typing import Annotated
 import logging
-import torch
-from fastapi import Depends, Request, HTTPException
+from typing import Annotated, TypeVar
 
+import torch
+from fastapi import Depends, HTTPException, Request
+from project_poet.config import CFG
 from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
-from project_poet.config import CFG
 
 logger = logging.getLogger(__name__)
 
+T = TypeVar("T")
 
-def _require(value, name: str):
+
+def _require(value: T | None, name: str) -> T:
     if value is None:
         logger.warning("%s not loaded", name)
         raise HTTPException(status_code=503, detail=f"{name} not loaded")

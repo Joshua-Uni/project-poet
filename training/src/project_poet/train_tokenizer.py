@@ -1,10 +1,10 @@
-import pandas as pd
 from pathlib import Path
 
-from project_poet.tokenizer import train_tokenizer
+import pandas as pd
+
 from project_poet.config import get_config
 from project_poet.dataloader import split_dataframe
-
+from project_poet.tokenizer import train_tokenizer
 
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "config.yaml"
 
