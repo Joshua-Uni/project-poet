@@ -1,8 +1,5 @@
 To do:
 
-Part 1
-
-
 Part 2: Fix Data
 - merge git's together again + github merges
 - current poems dataset sucks --> replace + make your own categorisation of genre
