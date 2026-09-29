@@ -14,9 +14,15 @@ router = APIRouter(tags=["Generate"])
 @router.post("/generate", response_model=GenerateResponse)
 def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: cfgDep,  device: DeviceDep) -> GenerateResponse:
     started = time.perf_counter()
-    logger.info("generate | title %r | temp %s | max_tokens %s", req.title, req.temperature, req.max_tokens)
+    logger.info(
+        "generate | title %r | genre %s | temp %s | max_tokens %s",
+        req.title,
+        req.genre,
+        req.temperature,
+        req.max_tokens,
+    )
     response = []
-    tokens = [tokenizer.title_start_id] + tokenizer.encode(req.title) + [tokenizer.title_end_id, tokenizer.poem_start_id]
+    tokens = tokenizer.prompt_ids(req.title, req.genre)
 
     for i in range(req.max_tokens):
         next_token = generate_text(model, tokens, cfg.model.max_block_size, req.temperature, device, req.top_k, req.top_p)
@@ -28,7 +34,7 @@ def generate(req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg
     poem = tokenizer.decode(response)
     logger.info("generate done | tokens %s | %.2fs", len(response), time.perf_counter() - started)
     logger.debug("generate | poem\n%s", poem)
-    return GenerateResponse(title=req.title, poem=poem, tokens=len(response))
+    return GenerateResponse(title=req.title, genre=req.genre, poem=poem, tokens=len(response))
 
 
 

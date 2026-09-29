@@ -12,7 +12,8 @@ from project_poet.config import CFG
 from project_poet.config import Tokenizer as TokenizerCfg
 
 PAD_TOKEN = "<pad>"
-GENRES = {'Fear': '<FEAR>', 'Anger': '<ANGER>',
+GENRES = {'Fear': '<FEAR>',
+          'Anger': '<ANGER>',
           'Joy': "<JOY>",
           'Sadness': "<SADNESS>",
           'Love': "<LOVE>",
@@ -40,16 +41,15 @@ class PoemTokenizer:
     def decode(self, ids: list[int]) -> str:
         return self.hf.decode(ids)
 
-    def encode_example(self, title: str, genre: str, poem: str) -> list[int]:
+    def prompt_ids(self, title: str, genre: str) -> list[int]:
         return (
             [self.title_start_id]
             + self.encode(title)
-            + [self.title_end_id]
-            + [self.poem_start_id]
-            + [self.genre_id[genre]]
-            + self.encode(poem)
-            + [self.poem_end_id]
+            + [self.title_end_id, self.poem_start_id, self.genre_id[genre]]
         )
+
+    def encode_example(self, title: str, genre: str, poem: str) -> list[int]:
+        return self.prompt_ids(title, genre) + self.encode(poem) + [self.poem_end_id]
 
     def save(self, path: str) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)

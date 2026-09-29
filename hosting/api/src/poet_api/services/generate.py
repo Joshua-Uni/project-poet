@@ -26,16 +26,13 @@ def stream_poem(
 ) -> Iterator[str]:
     started = time.perf_counter()
     logger.info(
-        "generate stream | title %r | temp %s | max_tokens %s",
+        "generate stream | title %r | genre %s | temp %s | max_tokens %s",
         req.title,
+        req.genre,
         req.temperature,
         req.max_tokens,
     )
-    tokens = (
-        [tokenizer.title_start_id]
-        + tokenizer.encode(req.title)
-        + [tokenizer.title_end_id, tokenizer.poem_start_id]
-    )
+    tokens = tokenizer.prompt_ids(req.title, req.genre)
     response = []
 
     for _ in range(req.max_tokens):

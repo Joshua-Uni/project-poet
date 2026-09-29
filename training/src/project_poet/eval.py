@@ -32,8 +32,9 @@ if __name__ == "__main__":
     temp = 1.2
     top_k = 30
     top_p = 0.9
-    logger.info("sample | title %r | temp %s | top_k %s | top_p %s", title, temp, top_k, top_p)
-    tokens = [tokenizer.title_start_id] + tokenizer.encode(title) + [tokenizer.title_end_id, tokenizer.poem_start_id]
+    genre = "Love"
+    logger.info("sample | title %r | genre %s | temp %s | top_k %s | top_p %s", title, genre, temp, top_k, top_p)
+    tokens = tokenizer.prompt_ids(title, genre)
     response = []
     for i in range(100):
         next_token = generate_text(model, tokens, cfg.model.max_block_size, temp, device, top_k, top_p)
