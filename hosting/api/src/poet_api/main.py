@@ -10,6 +10,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from project_poet.config import get_device, repo_root
 
 from poet_api.logging import setup_logging
@@ -41,5 +43,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(lifespan=lifespan)
+# A page opened on another port is a different origin. The browser will
+# not let it read /generate unless the API names that origin.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+class FreshStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        # Revalidate on each load so a refresh picks up a new page script.
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 app.include_router(health.router)
 app.include_router(generate.router)
+app.mount("/", FreshStaticFiles(directory=repo_root() / "hosting" / "web", html=True), name="web")

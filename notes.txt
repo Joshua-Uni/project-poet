@@ -1,26 +1,19 @@
 To do:
 
-Part 2: Fix Data
-- insert genre
-
-
-Part 3: Website Building
-- CORS
-- Make Website part of this
-
 
 
 Part 4: Proper Training and Quality
 - Py Tests
+- Read Me
 - Add Gelu, merge lm_head and Token Embedding, grad clipping
 - Train Good Model
 
 
 Part 5: Hosting and Publishing
-- Docker
+- Make sure website works on AWS
+- Docker?
 - Learn AWS
 - Host on AWS
-- Read Me
 
 
 

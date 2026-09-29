@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="Love">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap">
+  <script src="themes.js?v=3"></script>
+  <script>
+    (function () {
+      var name = savedGenre();
+      applyTheme(name);
+      if (name !== "Love") {
+        var link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = THEMES[name].fontHref;
+        document.head.appendChild(link);
+        loadedFontThemes[name] = true;
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css?v=6">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+  <canvas id="atmosphere" aria-hidden="true"></canvas>
+  <main>
+    <header class="mast">
+      <p class="mark">Project Poet</p>
+      <h1>Write a poem</h1>
+      <p class="lede">Choose a genre, give it a title, and the model will write.</p>
+    </header>
+
+    <form id="write" class="panel">
+      <fieldset>
+        <legend>Genre</legend>
+        <div class="genres" id="genres"></div>
+      </fieldset>
+
+      <div class="controls">
+        <label class="title-field" for="title">
+          <span>Title</span>
+          <input id="title" name="title" type="text" autocomplete="off" required>
+        </label>
+        <label>
+          <span>Temperature</span>
+          <input id="temperature" name="temperature" type="number" min="0.1" step="0.1" value="1" required>
+        </label>
+        <label>
+          <span>Max tokens</span>
+          <input id="max-tokens" name="max_tokens" type="number" min="1" max="255" step="1" value="100" required>
+        </label>
+        <label>
+          <span>Top-k</span>
+          <input id="top-k" name="top_k" type="number" min="1" max="9999" step="1" placeholder="Off">
+        </label>
+        <label>
+          <span>Top-p</span>
+          <input id="top-p" name="top_p" type="number" min="0.01" max="1" step="0.01" placeholder="Off">
+        </label>
+        <button id="submit" type="submit">Write</button>
+      </div>
+      <p class="hint">Leave top-k and top-p empty to keep every word available.</p>
+
+      <p id="status" aria-live="polite">
+        <span id="status-text"></span><span class="ellipsis" aria-hidden="true"></span>
+      </p>
+    </form>
+
+    <article id="result" class="card" hidden>
+      <h2 id="poem-title"></h2>
+      <p id="poem-genre"></p>
+      <div id="poem" class="poem"></div>
+      <p id="token-count"></p>
+      <div class="actions">
+        <button id="copy" class="secondary" type="button">Copy poem</button>
+        <button id="again" class="secondary" type="button">Generate another</button>
+      </div>
+    </article>
+  </main>
+  <script src="atmosphere.js?v=3"></script>
+  <script src="app.js?v=5"></script>
+</body>
+</html>
