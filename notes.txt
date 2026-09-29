@@ -1,8 +1,6 @@
 To do:
 
 Part 2: Fix Data
-- merge git's together again + github merges
-- current poems dataset sucks --> replace + make your own categorisation of genre
 - insert genre
 
 
@@ -19,6 +17,7 @@ Part 4: Proper Training and Quality
 
 
 Part 5: Hosting and Publishing
+- Docker
 - Learn AWS
 - Host on AWS
 - Read Me

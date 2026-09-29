@@ -2,12 +2,12 @@
 #BUT we still use this cfg's train and data!
 
 train: #resume=true --> still used
-  resume: False
+  resume: True
   model_path: "artifacts/ckpt.pt"
   log_lvl: INFO
-  learning_rate: 0.01
+  learning_rate: 0.001
   weight_decay: 0.01 #adamW
-  epochs: 5
+  epochs: 4
   batch_size: 10
 
 model: #resume=true --> replaced with ckpt
@@ -19,7 +19,7 @@ model: #resume=true --> replaced with ckpt
   dropout: 0.2
 
 tokenizer: #resume=true --> replaced with ckpt
-  vocab_size: 3500
+  vocab_size: 4000
   save_path: "artifacts/tokenizer.json"
   title_start: "<title>"
   title_end: "</title>"
@@ -27,6 +27,6 @@ tokenizer: #resume=true --> replaced with ckpt
   poem_end: "</poem>"
 
 data: #resume=true --> still used
-  data_path: "data/processed/trial_processed.csv"
+  data_path: "data/processed/poems.csv"
   seed: 7899
-  val_ratio: 0.5
+  val_ratio: 0.2

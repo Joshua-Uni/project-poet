@@ -57,8 +57,8 @@ def split_dataframe(df: pd.DataFrame, cfg: CFG) -> tuple[pd.DataFrame, pd.DataFr
 
 def build_sequences(df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int) -> list[list[int]]:
     seq = [
-        tokenizer.encode_example(title, poem)[:max_block_size] #MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
-        for title, poem in zip(df["Title"], df["Poem"])
+        tokenizer.encode_example(title, genre, poem)[:max_block_size] #MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
+        for title, genre, poem in zip(df["Title"], df["Genre"] , df["Poem"])
     ]
     return seq
 

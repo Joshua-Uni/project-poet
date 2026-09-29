@@ -12,7 +12,11 @@ from project_poet.config import CFG
 from project_poet.config import Tokenizer as TokenizerCfg
 
 PAD_TOKEN = "<pad>"
-
+GENRES = {'Fear': '<FEAR>', 'Anger': '<ANGER>',
+          'Joy': "<JOY>",
+          'Sadness': "<SADNESS>",
+          'Love': "<LOVE>",
+          'Surprise': "<SURPRISE>"}
 
 class PoemTokenizer:
     def __init__(self, hf: Tokenizer, cfg: TokenizerCfg):
@@ -23,6 +27,8 @@ class PoemTokenizer:
         self.title_end_id = hf.token_to_id(cfg.title_end)
         self.poem_start_id = hf.token_to_id(cfg.poem_start)
         self.poem_end_id = hf.token_to_id(cfg.poem_end)
+        self.genre_id = {name: hf.token_to_id(token) for name, token in GENRES.items()}
+
 
     @property
     def vocab_size(self) -> int:
@@ -34,12 +40,13 @@ class PoemTokenizer:
     def decode(self, ids: list[int]) -> str:
         return self.hf.decode(ids)
 
-    def encode_example(self, title: str, poem: str) -> list[int]:
+    def encode_example(self, title: str, genre: str, poem: str) -> list[int]:
         return (
             [self.title_start_id]
             + self.encode(title)
             + [self.title_end_id]
             + [self.poem_start_id]
+            + [self.genre_id[genre]]
             + self.encode(poem)
             + [self.poem_end_id]
         )
@@ -66,7 +73,7 @@ def train_tokenizer(train_df: pd.DataFrame, cfg: CFG) -> PoemTokenizer:
         cfg.tokenizer.title_end,
         cfg.tokenizer.poem_start,
         cfg.tokenizer.poem_end,
-    ]
+    ] + list(GENRES.values())
 
     hf = Tokenizer(BPE())
     hf.pre_tokenizer = ByteLevel(add_prefix_space=False)
