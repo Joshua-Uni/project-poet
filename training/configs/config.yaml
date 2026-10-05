@@ -2,12 +2,13 @@
 #BUT we still use this cfg's train and data!
 
 train: #resume=true --> still used
-  resume: True
+  resume: False
   model_path: "artifacts/ckpt.pt"
   log_lvl: INFO
   learning_rate: 0.001
   weight_decay: 0.01 #adamW
-  epochs: 4
+  max_norm: 1.2 #Grad Clipping
+  epochs: 10
   batch_size: 10
 
 model: #resume=true --> replaced with ckpt
@@ -29,4 +30,4 @@ tokenizer: #resume=true --> replaced with ckpt
 data: #resume=true --> still used
   data_path: "data/processed/poems.csv"
   seed: 7899
-  val_ratio: 0.2
+  val_ratio: 0.95

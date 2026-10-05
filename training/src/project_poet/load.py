@@ -84,11 +84,12 @@ def load_training(yaml_cfg: CFG, device: torch.device) -> tuple[PoetTransformer,
     start_epoch = ckpt["epoch"] + 1
     
     logger.info(
-        "resume | %s | next epoch %s | lr %s | weight_decay %s | vocab %s",
+        "resume | %s | next epoch %s | lr %s | weight_decay %s | max_norm %s | vocab %s",
         yaml_cfg.train.model_path,
         start_epoch,
         cfg.train.learning_rate,
         cfg.train.weight_decay,
+        cfg.train.max_norm,
         tokenizer.vocab_size,
     )
     return model, opt, tokenizer, cfg, start_epoch, ckpt["train_loss"], ckpt["eval_loss"]

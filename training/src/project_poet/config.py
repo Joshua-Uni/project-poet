@@ -12,6 +12,7 @@ class Train:
     log_lvl: str
     learning_rate: float
     weight_decay: float
+    max_norm: float
     epochs: int
     batch_size: int
 

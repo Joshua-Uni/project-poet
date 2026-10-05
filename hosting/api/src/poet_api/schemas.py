@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
 from project_poet.tokenizer import GENRES
+from pydantic import BaseModel, Field, field_validator
+
 
 class GenerateRequest(BaseModel):
     title: str = Field(default = "Meowth's Shanty", description="Poem Title")

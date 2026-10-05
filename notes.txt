@@ -1,20 +1,20 @@
 To do:
 
 
-
-Part 4: Proper Training and Quality
+Part 4: Pre Hosting
 - Py Tests
 - Read Me
-- Add Gelu, merge lm_head and Token Embedding, grad clipping
-- Train Good Model
+- Opus full checkup
 
 
-Part 5: Hosting and Publishing
-- Make sure website works on AWS
-- Docker?
+Part 5: Hosting
+- Docker
+- Train Decent Model
 - Learn AWS
 - Host on AWS
 
+Part 6: Best Model
+- Train model on GPU and rerun 
 
 
 
@@ -22,3 +22,6 @@ Part 5: Hosting and Publishing
 
 #ruff check training/src hosting/api/src
 #mypy training/src hosting/api/src  
+
+uvicorn poet_api.main:app --reload
+http://127.0.0.1:8000

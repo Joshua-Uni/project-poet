@@ -8,11 +8,11 @@ from project_poet.config import CFG
 class FeedForward(nn.Module):
     def __init__(self, cfg: CFG):
         super().__init__()
-        out_proj = nn.Linear(4 * cfg.model.embedding_dim, cfg.model.embedding_dim) #B,T,C
+        out_proj = nn.Linear(4 * cfg.model.embedding_dim, cfg.model.embedding_dim)
         object.__setattr__(out_proj, "is_residual_proj", True)
         self.net = nn.Sequential(
-            nn.Linear(cfg.model.embedding_dim, cfg.model.embedding_dim*4), #B,T,C*4
-            nn.ReLU(),
+            nn.Linear(cfg.model.embedding_dim, cfg.model.embedding_dim*4),
+            nn.GELU(),
             out_proj,
             nn.Dropout(cfg.model.dropout)
         )
@@ -85,11 +85,11 @@ class PoetTransformer(nn.Module):
     def __init__(self, cfg: CFG, vocab_size: int):
         super().__init__()
 
-        self.token_embedding = nn.Embedding(vocab_size, cfg.model.embedding_dim)
+        self.token_embedding = nn.Embedding(vocab_size, cfg.model.embedding_dim) # shared with the output projection
         self.position_embedding = nn.Embedding(cfg.model.max_block_size, cfg.model.embedding_dim)
         self.blocks = nn.Sequential(*[Block(cfg) for _ in range(cfg.model.n_layers)])
         self.ln_f = nn.LayerNorm(cfg.model.embedding_dim) # final layer norm
-        self.lm_head = nn.Linear(cfg.model.embedding_dim, vocab_size)
+        #self.lm_head = nn.Linear(cfg.model.embedding_dim, vocab_size)
 
         self.n_layers = cfg.model.n_layers
         self.apply(self._init_weights)
@@ -108,11 +108,11 @@ class PoetTransformer(nn.Module):
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
         B, T = idx.shape
 
-        tok_emb = self.token_embedding(idx) # (B,T,C)
+        tok_emb = self.token_embedding(idx) # Each (B,T) indexes into (vocab index, C) -->(B,T,C)
         pos_emb = self.position_embedding(torch.arange(T, device=idx.device)) # (T,C)
-        x = tok_emb + pos_emb # (B,T,C)
+        x = tok_emb + pos_emb # (B,T,C) + (T,C) --> (B,T,C)
         x = self.blocks(x) # (B,T,C)
         x = self.ln_f(x) # (B,T,C)
-        logits = self.lm_head(x) # (B,T,vocab_size)
+        logits = F.linear(x, self.token_embedding.weight) # (B,T,C) @ (C, vocab) --> (B,T,vocab) (note: token embedding stored as a .T so F.linear work)
 
         return logits

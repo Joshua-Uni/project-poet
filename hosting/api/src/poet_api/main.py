@@ -9,10 +9,11 @@ import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from project_poet.config import get_device, repo_root
+from starlette.types import Scope
 
 from poet_api.logging import setup_logging
 from poet_api.routers import generate, health
@@ -52,7 +53,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 class FreshStaticFiles(StaticFiles):
-    async def get_response(self, path: str, scope):
+    async def get_response(self, path: str, scope: Scope) -> Response:
         response = await super().get_response(path, scope)
         # Revalidate on each load so a refresh picks up a new page script.
         response.headers["Cache-Control"] = "no-cache"

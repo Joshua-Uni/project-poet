@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+from project_poet.config import Train as TrainCfg
+
 
 def train_one_epoch(model: nn.Module,
+                    train_cfg: TrainCfg,
                     loader: DataLoader,
                     opt: torch.optim.Optimizer,
                     loss_fn: nn.Module,
@@ -18,6 +21,7 @@ def train_one_epoch(model: nn.Module,
         logits = model(xb)
         loss = loss_fn(logits.view(-1, logits.size(-1)), yb.view(-1))
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=train_cfg.max_norm)
         opt.step()
 
         batch_tokens = int((yb != -100).sum())

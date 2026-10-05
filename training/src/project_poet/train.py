@@ -23,11 +23,12 @@ if __name__ == "__main__":
     device = get_device()
 
     logger.info(
-        "train | device %s | resume %s | epochs %s | lr %s | batch %s",
+        "train | device %s | resume %s | epochs %s | lr %s | max_norm %s | batch %s",
         device,
         yaml_cfg.train.resume,
         yaml_cfg.train.epochs,
         yaml_cfg.train.learning_rate,
+        yaml_cfg.train.max_norm,
         yaml_cfg.train.batch_size,
     )
 
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
 
     for epoch in range(start_epoch, cfg.train.epochs):
-        train_loss = train_one_epoch(model, train_dataloader, opt, loss_fn, device)
+        train_loss = train_one_epoch(model, cfg.train, train_dataloader, opt, loss_fn, device)
         train_loss_log.append(train_loss)
 
         eval_loss = eval_one_epoch(model, val_dataloader, loss_fn, device)
