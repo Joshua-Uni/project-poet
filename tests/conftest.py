@@ -1,7 +1,11 @@
-"""Tiny in-memory tokenizer shared by the suite."""
+"""Tiny in-memory tokenizer and transformer shared by the suite."""
+
+from types import SimpleNamespace
 
 import pytest
+from project_poet.config import Model as ModelCfg
 from project_poet.config import Tokenizer as TokenizerCfg
+from project_poet.model import PoetTransformer
 from project_poet.tokenizer import GENRES, PAD_TOKEN, PoemTokenizer
 from tokenizers import Tokenizer
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
@@ -36,3 +40,17 @@ def tokenizer():
         trainer=BpeTrainer(vocab_size=cfg.vocab_size, special_tokens=specials),
     )
     return PoemTokenizer(hf, cfg)
+
+
+@pytest.fixture
+def tiny_model():
+    # head_size * n_head matches embedding_dim so the attention residual can add.
+    model_cfg = ModelCfg(
+        embedding_dim=8,
+        max_block_size=16,
+        n_layers=1,
+        n_head=2,
+        head_size=4,
+        dropout=0.0,
+    )
+    return PoetTransformer(SimpleNamespace(model=model_cfg), vocab_size=32)

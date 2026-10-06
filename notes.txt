@@ -2,10 +2,8 @@ To do:
 
 
 Part 4: Pre Hosting
-- Py Tests
-- Docker --> Neeed for AWS?
-- Read Me
-- Opus full checkup + Check I can run on AWS!
+- Docker --> Need for AWS?
+- Opus full checkup + Check I can run on AWS! + Read Me
 
 
 Part 5: Hosting

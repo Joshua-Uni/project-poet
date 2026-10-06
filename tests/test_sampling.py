@@ -8,7 +8,7 @@ class FixedLogits(nn.Module):
     def __init__(self, logits):
         super().__init__()
         self.logits = logits
-    
+
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
         batch, time = idx.shape
         return self.logits.view(1, 1, -1).expand(batch, time, -1)
@@ -49,11 +49,12 @@ def test_top_p_drops_tokens_past_the_nucleus():
     text = [0]
     device = torch.device("cpu")
     max_block_size = 10
-    
+
     token = generate_text(model, text, max_block_size, 1.0, device, top_p=0.1)
     assert token == 0
     top_p_one = generate_text(model, text, max_block_size, 1.0, device, top_p=1)
     assert top_p_one in (0, 1, 2)
+
 
 def test_top_k_larger_than_vocab_is_clamped():
     #top_k=10000 on a 4-way vocab does not raise. The sample is in 0..3. This is the clamp inside generate_text.
@@ -62,6 +63,6 @@ def test_top_k_larger_than_vocab_is_clamped():
     text = [0]
     device = torch.device("cpu")
     max_block_size = 10
-    
+
     token = generate_text(model, text, max_block_size, 1.0, device, top_k=10000)
-    assert token in (0,1,2,3)
+    assert token in (0, 1, 2, 3)

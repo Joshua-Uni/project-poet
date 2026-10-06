@@ -1,4 +1,5 @@
 """Prompt order, encode_example, genre ids, and BPE training text."""
+
 import pandas as pd
 from project_poet.tokenizer import GENRES, PoemTokenizer, _train_texts
 
