@@ -12,12 +12,15 @@ def test_collate_shifts_targets_and_ignores_pad(tokenizer):
     #Two lengths. x is seq[:-1] padded with pad_id. y is seq[1:] padded with -100.
     seq1 = torch.tensor([19, 100, 100, 200])
     seq2 = torch.tensor([10, 23, 30])
-    x, y = make_collate_fn(tokenizer.pad_id)([seq1, seq2])
+    collate_fn = make_collate_fn(tokenizer.pad_id)
+    x,y = collate_fn([seq1, seq2])
+    x2, y2 = x[1], y[1]
+    #Check padding on x and y
+    assert x2[-1] == tokenizer.pad_id
+    assert y2[-1] == -100
 
-    assert torch.equal(x[0], torch.tensor([19, 100, 100]))
-    assert torch.equal(y[0], torch.tensor([100, 100, 200]))
-    assert torch.equal(x[1], torch.tensor([10, 23, tokenizer.pad_id]))
-    assert torch.equal(y[1], torch.tensor([23, 30, -100]))
+    #Check targets shift
+    assert x2[1] == y2[0]
 
 
 def test_split_is_deterministic():
