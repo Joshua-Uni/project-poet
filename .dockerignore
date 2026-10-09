@@ -1,0 +1,20 @@
+.git
+.gitignore
+.DS_Store
+venv/
+.venv/
+__pycache__/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Not needed to serve
+data/
+tests/
+training/notebooks/
+notes.txt
+
+# Only the checkpoint is copied in (see Dockerfile)
+artifacts/*
+!artifacts/ckpt.pt

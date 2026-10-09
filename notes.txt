@@ -2,8 +2,7 @@ To do:
 
 
 Part 4: Pre Hosting
-- Docker --> Need for AWS?
-- Opus full checkup + Check I can run on AWS! + Read Me
+- Opus full checkup + Check I can run on AWS!
 
 
 Part 5: Hosting
@@ -12,6 +11,7 @@ Part 5: Hosting
 - Host on AWS
 
 Part 6: Best Model
+- Read Me
 - Train model on GPU and rerun 
 
 

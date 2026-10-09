@@ -2,16 +2,16 @@
 #BUT we still use this cfg's train and data!
 
 train: #resume=true --> still used
-  resume: False
+  resume: True
   model_path: "artifacts/ckpt.pt"
   log_lvl: INFO
   learning_rate: 0.001
   weight_decay: 0.01 #adamW
-  max_norm: 1.2 #Grad Clipping
-  epochs: 10
-  batch_size: 10
+  max_norm: 1.8 #Grad Clipping
+  epochs: 100
+  batch_size: 20
 
-model: #resume=true --> replaced with ckpt
+model: #resume=true --> replaced with saved ckpt
   embedding_dim: 64
   max_block_size: 768
   n_layers: 3
@@ -19,7 +19,7 @@ model: #resume=true --> replaced with ckpt
   head_size: 32
   dropout: 0.2
 
-tokenizer: #resume=true --> replaced with ckpt
+tokenizer: #resume=true --> replaced with saved ckpt
   vocab_size: 4000
   save_path: "artifacts/tokenizer.json"
   title_start: "<title>"
@@ -30,4 +30,4 @@ tokenizer: #resume=true --> replaced with ckpt
 data: #resume=true --> still used
   data_path: "data/processed/poems.csv"
   seed: 7899
-  val_ratio: 0.95
+  val_ratio: 0.1

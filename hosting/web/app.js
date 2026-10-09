@@ -15,8 +15,10 @@ var poem = document.querySelector("#poem");
 var tokenCount = document.querySelector("#token-count");
 var copyButton = document.querySelector("#copy");
 var againButton = document.querySelector("#again");
+var clearButton = document.querySelector("#clear");
 
-var API_BASE = location.port === "8000" ? "" : "http://127.0.0.1:8000";
+// The API serves this page, so requests stay on the same origin (works locally and when hosted).
+var API_BASE = "";
 var currentGenre = document.documentElement.dataset.theme || "Love";
 var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 var loadingTimer = 0;
@@ -100,6 +102,13 @@ againButton.addEventListener("click", function () {
   form.requestSubmit();
 });
 
+clearButton.addEventListener("click", function () {
+  poem.textContent = "";
+  tokenCount.textContent = "";
+  copyButton.disabled = true;
+  clearButton.disabled = true;
+});
+
 copyButton.addEventListener("click", async function () {
   var text = poem.textContent;
   if (!text) {
@@ -120,6 +129,7 @@ async function writePoem(title, genre) {
   submit.disabled = true;
   againButton.disabled = true;
   copyButton.disabled = true;
+  clearButton.disabled = true;
   submit.textContent = "Writing…";
   startLoading(genre);
 
@@ -160,6 +170,7 @@ async function writePoem(title, genre) {
     submit.disabled = false;
     againButton.disabled = false;
     copyButton.disabled = poem.textContent.length === 0;
+    clearButton.disabled = poem.textContent.length === 0;
     submit.textContent = "Write";
   }
 }
