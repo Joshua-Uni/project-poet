@@ -1,20 +1,13 @@
 To do:
 
 
-Part 4: Pre Hosting
-- Opus full checkup
-
-
-Part 5: Hosting
-- Any changes b4 AWS?
-- Host on AWS
-
-Part 6: Best Model
-- Read Me
+Saturday
 - Train model on GPU and rerun 
 
-
-
+Sunday
+- Read Me
+- Any changes b4 AWS?
+- Host on AWS
 
 
 #ruff check training/src hosting/api/src
