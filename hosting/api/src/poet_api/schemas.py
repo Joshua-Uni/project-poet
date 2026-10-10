@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class GenerateRequest(BaseModel):
-    title: str = Field(default="Meowth's Shanty", description="Poem Title")
+    title: str = Field(default="A Sailor's Shanty", max_length=80, description="Poem Title")
     genre: str = Field(
         default="Love", description="One of Fear, Anger, Joy, Sadness, Love, Surprise"
     )

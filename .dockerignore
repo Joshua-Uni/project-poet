@@ -15,6 +15,6 @@ tests/
 training/notebooks/
 notes.txt
 
-# Only the checkpoint is copied in (see Dockerfile)
+# Only the best checkpoint is copied in (see Dockerfile)
 artifacts/*
-!artifacts/ckpt.pt
+!artifacts/best.pt

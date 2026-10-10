@@ -55,6 +55,8 @@ if __name__ == "__main__":
         )
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
+    # Resume keeps the best val seen so far, so a later worse epoch does not replace best.pt.
+    best_val = min(eval_loss_log) if eval_loss_log else float("inf")
 
     for epoch in range(start_epoch, cfg.train.epochs):
         train_loss = train_one_epoch(model, cfg.train, train_dataloader, opt, loss_fn, device)
@@ -65,3 +67,16 @@ if __name__ == "__main__":
         logger.info("epoch %s | train %.4f | val %.4f", epoch, train_loss, eval_loss)
 
         save_training(epoch, model, opt, cfg, tokenizer, train_loss_log, eval_loss_log)
+        if eval_loss < best_val:
+            best_val = eval_loss
+            save_training(
+                epoch,
+                model,
+                opt,
+                cfg,
+                tokenizer,
+                train_loss_log,
+                eval_loss_log,
+                cfg.train.best_path,
+            )
+            logger.info("best | epoch %s | val %.4f | %s", epoch, eval_loss, cfg.train.best_path)

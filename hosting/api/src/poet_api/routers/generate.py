@@ -3,7 +3,7 @@ import time
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from poet_api.dependencies import DeviceDep, ModelDep, TokenizerDep, cfgDep
+from poet_api.dependencies import CfgDep, DeviceDep, ModelDep, TokenizerDep
 from poet_api.schemas import GenerateRequest, GenerateResponse
 from poet_api.services.generate import stream_poem
 from project_poet.engine import generate_text
@@ -14,7 +14,7 @@ router = APIRouter(tags=["Generate"])
 
 @router.post("/generate", response_model=GenerateResponse)
 def generate(
-    req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: cfgDep, device: DeviceDep
+    req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: CfgDep, device: DeviceDep
 ) -> GenerateResponse:
     started = time.perf_counter()
     logger.info(
@@ -27,7 +27,7 @@ def generate(
     response = []
     tokens = tokenizer.prompt_ids(req.title, req.genre)
 
-    for i in range(req.max_tokens):
+    for _ in range(req.max_tokens):
         next_token = generate_text(
             model, tokens, cfg.model.max_block_size, req.temperature, device, req.top_k, req.top_p
         )
@@ -44,7 +44,7 @@ def generate(
 
 @router.post("/generate/stream")
 def generate_stream(
-    req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: cfgDep, device: DeviceDep
+    req: GenerateRequest, model: ModelDep, tokenizer: TokenizerDep, cfg: CfgDep, device: DeviceDep
 ) -> StreamingResponse:
     return StreamingResponse(
         stream_poem(req, model, tokenizer, cfg, device),

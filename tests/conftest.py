@@ -44,7 +44,7 @@ def tokenizer():
 
 @pytest.fixture
 def tiny_model():
-    # head_size * n_head matches embedding_dim so the attention residual can add.
+    # The output projection maps n_head * head_size back to embedding_dim, so the two need not match.
     model_cfg = ModelCfg(
         embedding_dim=8,
         max_block_size=16,

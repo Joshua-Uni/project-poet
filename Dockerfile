@@ -1,7 +1,8 @@
 # Project Poet: one container serving the API and the website (FastAPI + uvicorn).
 #
-# Build (checkpoint must exist at artifacts/ckpt.pt):
-#   docker build --platform linux/amd64 -t project-poet .
+# Build for the t4g server (ARM, same chip family as Apple Silicon).
+# artifacts/best.pt must exist.
+#   docker build --platform linux/arm64 -t project-poet .
 # Run:
 #   docker run --rm -p 8000:8000 project-poet     -> http://127.0.0.1:8000
 
@@ -29,7 +30,7 @@ RUN pip install -e training -e hosting/api
 # Site and model. Last, since they change most often. The checkpoint also
 # carries the tokenizer and model config, so nothing else is needed.
 COPY hosting/web hosting/web
-COPY artifacts/ckpt.pt artifacts/ckpt.pt
+COPY artifacts/best.pt artifacts/best.pt
 
 RUN useradd --create-home poet
 USER poet

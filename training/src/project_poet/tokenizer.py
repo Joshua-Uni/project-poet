@@ -63,7 +63,7 @@ class PoemTokenizer:
 
 
 def _train_texts(df: pd.DataFrame) -> Iterator[str]:
-    for title, poem in zip(df["Title"], df["Poem"]):
+    for title, poem in zip(df["Title"], df["Poem"], strict=True):
         yield str(title)
         yield str(poem)
 

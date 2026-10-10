@@ -19,17 +19,17 @@ def _require(value: T | None, name: str) -> T:
     return value
 
 
-def get_model(req: Request) -> PoetTransformer:
-    model = getattr(req.app.state, "model", None)
+def get_model(request: Request) -> PoetTransformer:
+    model = getattr(request.app.state, "model", None)
     return _require(model, "model")
 
 
-def get_tokenizer(req: Request) -> PoemTokenizer:
-    tokenizer = getattr(req.app.state, "tokenizer", None)
+def get_tokenizer(request: Request) -> PoemTokenizer:
+    tokenizer = getattr(request.app.state, "tokenizer", None)
     return _require(tokenizer, "tokenizer")
 
 
-def get_device(request: Request) -> torch.device:
+def get_app_device(request: Request) -> torch.device:
     device = getattr(request.app.state, "device", None)
     return _require(device, "device")
 
@@ -41,5 +41,5 @@ def get_cfg(request: Request) -> CFG:
 
 ModelDep = Annotated[PoetTransformer, Depends(get_model)]
 TokenizerDep = Annotated[PoemTokenizer, Depends(get_tokenizer)]
-DeviceDep = Annotated[torch.device, Depends(get_device)]
-cfgDep = Annotated[CFG, Depends(get_cfg)]
+DeviceDep = Annotated[torch.device, Depends(get_app_device)]
+CfgDep = Annotated[CFG, Depends(get_cfg)]

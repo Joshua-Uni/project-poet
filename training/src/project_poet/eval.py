@@ -18,9 +18,9 @@ if __name__ == "__main__":
     setup_logging(yaml_cfg.train.log_lvl)
     set_seed(yaml_cfg.data.seed)
     device = get_device()
-    logger.info("eval | device %s | ckpt %s", device, yaml_cfg.train.model_path)
+    logger.info("eval | device %s | ckpt %s", device, yaml_cfg.train.best_path)
 
-    model, tokenizer, cfg = load_inference(yaml_cfg.train.model_path, device, yaml_cfg)
+    model, tokenizer, cfg = load_inference(yaml_cfg.train.best_path, device, yaml_cfg)
 
     _, val_dataloader, tokenizer = get_dataloaders(cfg, tokenizer)
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     )
     tokens = tokenizer.prompt_ids(title, genre)
     response = []
-    for i in range(100):
+    for _token_i in range(100):
         next_token = generate_text(
             model, tokens, cfg.model.max_block_size, temp, device, top_k, top_p
         )

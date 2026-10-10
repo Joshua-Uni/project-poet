@@ -14,6 +14,13 @@ def test_request_defaults_leave_sampling_open():
     assert req.top_p is None
 
 
+def test_request_rejects_titles_longer_than_80_characters():
+    # 80 characters is the schema cap, so the prompt cannot grow past the block size.
+    assert GenerateRequest(title="a" * 80).title == "a" * 80
+    with pytest.raises(ValueError):
+        GenerateRequest(title="a" * 81)
+
+
 def test_request_rejects_blank_title_and_unknown_genre():
     # Title ' ' and genre 'Nature' raise ValidationError. 'Love' is accepted.
     with pytest.raises(ValueError):

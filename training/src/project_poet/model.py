@@ -30,13 +30,16 @@ class Head(nn.Module):
         self.value = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
 
         self.tril: torch.Tensor
+        # Rebuilt in __init__ from max_block_size, so it is not saved in the checkpoint.
         self.register_buffer(
-            "tril", torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size))
-        )  # Below Spine == 1 else 0
+            "tril",
+            torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size)),
+            persistent=False,
+        )
         self.dropout = nn.Dropout(cfg.model.dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, T, C = x.shape
+        T = x.shape[1]
         k = self.key(x)  # B,T,Hs
         q = self.query(x)  # B,T,Hs
         v = self.value(x)  # B,T,Hs
@@ -70,7 +73,6 @@ class MultiHeadAttention(nn.Module):
 
 class Block(nn.Module):
     def __init__(self, cfg: CFG):
-        # n_embd: embedding dimension, n_head: the number of heads we'd like
         super().__init__()
         self.self_attention = MultiHeadAttention(cfg)
         self.ffwd = FeedForward(cfg)
@@ -93,7 +95,6 @@ class PoetTransformer(nn.Module):
         self.position_embedding = nn.Embedding(cfg.model.max_block_size, cfg.model.embedding_dim)
         self.blocks = nn.Sequential(*[Block(cfg) for _ in range(cfg.model.n_layers)])
         self.ln_f = nn.LayerNorm(cfg.model.embedding_dim)  # final layer norm
-        # self.lm_head = nn.Linear(cfg.model.embedding_dim, vocab_size)
 
         self.n_layers = cfg.model.n_layers
         self.apply(self._init_weights)
@@ -110,15 +111,14 @@ class PoetTransformer(nn.Module):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
-        B, T = idx.shape
+        T = idx.shape[1]
 
         tok_emb = self.token_embedding(idx)  # Each (B,T) indexes into (vocab index, C) -->(B,T,C)
         pos_emb = self.position_embedding(torch.arange(T, device=idx.device))  # (T,C)
         x = tok_emb + pos_emb  # (B,T,C) + (T,C) --> (B,T,C)
         x = self.blocks(x)  # (B,T,C)
         x = self.ln_f(x)  # (B,T,C)
-        logits = F.linear(
-            x, self.token_embedding.weight
-        )  # (B,T,C) @ (C, vocab) --> (B,T,vocab) (note: token embedding stored as a .T so F.linear work)
+        # Weight is (vocab, C). F.linear computes x @ weight.T, so no transpose is stored.
+        logits = F.linear(x, self.token_embedding.weight)  # (B,T,C) @ (vocab,C).T --> (B,T,vocab)
 
         return logits

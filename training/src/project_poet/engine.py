@@ -37,7 +37,7 @@ def eval_one_epoch(
 ) -> float:
     model.eval()
     n_tokens = 0
-    total = 0
+    total = 0.0
 
     with torch.no_grad():
         for xb, yb in loader:

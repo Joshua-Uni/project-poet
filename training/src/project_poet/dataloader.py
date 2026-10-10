@@ -62,10 +62,8 @@ def build_sequences(
     df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int
 ) -> list[list[int]]:
     seq = [
-        tokenizer.encode_example(title, genre, poem)[
-            :max_block_size
-        ]  # MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
-        for title, genre, poem in zip(df["Title"], df["Genre"], df["Poem"])
+        tokenizer.encode_example(title, genre, poem)[:max_block_size]
+        for title, genre, poem in zip(df["Title"], df["Genre"], df["Poem"], strict=True)
     ]
     return seq
 
@@ -102,9 +100,6 @@ def make_collate_fn(
         seq_y = [seq[1:] for seq in batch]
         x = pad_sequence(seq_x, batch_first=True, padding_value=pad_id)
         y = pad_sequence(seq_y, batch_first=True, padding_value=-100)
-
-        # pad_mask = x == pad_id --> no longer required!
-
-        return x, y  # , pad_mask
+        return x, y
 
     return collate_fn

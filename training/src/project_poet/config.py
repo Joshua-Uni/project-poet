@@ -15,6 +15,7 @@ class Train:
     max_norm: float
     epochs: int
     batch_size: int
+    best_path: str = "artifacts/best.pt"
 
 
 @dataclass
@@ -81,6 +82,7 @@ def get_config(config_path: str | Path) -> CFG:
         raw_cfg = yaml.safe_load(f)
     cfg = cfg_from_dict(raw_cfg)
     cfg.train.model_path = _abs_from_root(cfg.train.model_path)
+    cfg.train.best_path = _abs_from_root(cfg.train.best_path)
     cfg.tokenizer.save_path = _abs_from_root(cfg.tokenizer.save_path)
     cfg.data.data_path = _abs_from_root(cfg.data.data_path)
     return cfg

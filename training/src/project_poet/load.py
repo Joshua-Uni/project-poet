@@ -33,7 +33,10 @@ def save_training(
     tokenizer: PoemTokenizer,
     train_loss: list[float],
     eval_loss: list[float],
+    path: str | None = None,
 ) -> None:
+    # path defaults to the resume checkpoint. Training also passes best_path.
+    out = cfg.train.model_path if path is None else path
     torch.save(
         {
             "epoch": epoch,  # last finished epoch (resume at epoch+1)
@@ -45,9 +48,9 @@ def save_training(
             "train_loss": train_loss,
             "eval_loss": eval_loss,
         },
-        cfg.train.model_path,
+        out,
     )
-    logger.info("saved checkpoint | epoch %s | %s", epoch, cfg.train.model_path)
+    logger.info("saved checkpoint | epoch %s | %s", epoch, out)
 
 
 def _load_ckpt(path: str, device: torch.device) -> dict[str, Any]:

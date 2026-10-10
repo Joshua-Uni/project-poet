@@ -2,8 +2,9 @@
 #BUT we still use this cfg's train and data!
 
 train: #resume=true --> still used
-  resume: True
-  model_path: "artifacts/ckpt.pt"
+  resume: False
+  model_path: "artifacts/ckpt.pt" # last epoch, used to resume
+  best_path: "artifacts/best.pt" # lowest val loss, used by eval and the API
   log_lvl: INFO
   learning_rate: 0.001
   weight_decay: 0.01 #adamW

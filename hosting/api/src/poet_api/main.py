@@ -1,4 +1,4 @@
-# Optional env (default checkpoint is artifacts/ckpt.pt under the repo root, log level INFO):
+# Optional env (default checkpoint is artifacts/best.pt under the repo root, log level INFO):
 #   POET_CKPT_PATH=... POET_LOG_LEVEL=INFO uvicorn poet_api.main:app --reload
 # Interactive API docs once running:
 #   Swagger UI -> http://127.0.0.1:8000/docs
@@ -10,12 +10,11 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from project_poet.config import get_device, repo_root
+from project_poet.logging import setup_logging
 from starlette.types import Scope
 
-from poet_api.logging import setup_logging
 from poet_api.routers import generate, health
 from poet_api.services.load import get_model_and_config
 
@@ -28,7 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     device = get_device()
     # Same root as training. A relative POET_CKPT_PATH is still used as given.
-    default_ckpt = str(repo_root() / "artifacts" / "ckpt.pt")
+    default_ckpt = str(repo_root() / "artifacts" / "best.pt")
     ckpt_path = os.getenv("POET_CKPT_PATH", default_ckpt)
     model, tokenizer, cfg = get_model_and_config(ckpt_path, device)
     model.eval()
@@ -44,14 +43,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(lifespan=lifespan)
-# A page opened on another port is a different origin. The browser will
-# not let it read /generate unless the API names that origin.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
-)
 
 
 class FreshStaticFiles(StaticFiles):
