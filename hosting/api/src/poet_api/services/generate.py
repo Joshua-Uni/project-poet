@@ -46,6 +46,8 @@ def stream_poem(
         yield _sse({"poem": tokenizer.decode(response)})
 
     poem = tokenizer.decode(response)
-    logger.info("generate stream done | tokens %s | %.2fs", len(response), time.perf_counter() - started)
+    logger.info(
+        "generate stream done | tokens %s | %.2fs", len(response), time.perf_counter() - started
+    )
     logger.debug("generate stream | poem\n%s", poem)
     yield _sse({"done": True, "tokens": len(response)})

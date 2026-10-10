@@ -5,12 +5,14 @@ from torch.utils.data import DataLoader
 from project_poet.config import Train as TrainCfg
 
 
-def train_one_epoch(model: nn.Module,
-                    train_cfg: TrainCfg,
-                    loader: DataLoader,
-                    opt: torch.optim.Optimizer,
-                    loss_fn: nn.Module,
-                    device: torch.device) -> float:
+def train_one_epoch(
+    model: nn.Module,
+    train_cfg: TrainCfg,
+    loader: DataLoader,
+    opt: torch.optim.Optimizer,
+    loss_fn: nn.Module,
+    device: torch.device,
+) -> float:
     model.train()
     total = 0.0
     n_tokens = 0
@@ -30,11 +32,9 @@ def train_one_epoch(model: nn.Module,
     return total / n_tokens
 
 
-
-def eval_one_epoch(model: nn.Module,
-                   loader: DataLoader,
-                   loss_fn: nn.Module,
-                   device: torch.device) -> float:
+def eval_one_epoch(
+    model: nn.Module, loader: DataLoader, loss_fn: nn.Module, device: torch.device
+) -> float:
     model.eval()
     n_tokens = 0
     total = 0
@@ -48,18 +48,19 @@ def eval_one_epoch(model: nn.Module,
             batch_tokens = int((yb != -100).sum())
             total += loss.item() * batch_tokens
             n_tokens += batch_tokens
-        
+
     return total / n_tokens
 
 
- 
-def generate_text(model: nn.Module,
-                  text: list[int],
-                  max_block_size: int,
-                  temperature: float,
-                  device: torch.device,
-                  top_k: int | None = None,
-                  top_p: float | None = None) -> int:
+def generate_text(
+    model: nn.Module,
+    text: list[int],
+    max_block_size: int,
+    temperature: float,
+    device: torch.device,
+    top_k: int | None = None,
+    top_p: float | None = None,
+) -> int:
     model.eval()
 
     with torch.no_grad():
@@ -78,10 +79,10 @@ def generate_text(model: nn.Module,
             sorted_probs = torch.softmax(sorted_logits, dim=-1)
             # keep the token that crosses top_p; drop the ones after it
             cumulative = torch.cumsum(sorted_probs, dim=-1)
-            sorted_logits = sorted_logits.masked_fill(cumulative - sorted_probs > top_p, float("-inf"))
+            sorted_logits = sorted_logits.masked_fill(
+                cumulative - sorted_probs > top_p, float("-inf")
+            )
             logits = torch.empty_like(logits).scatter_(0, sorted_idx, sorted_logits)
         probs = torch.softmax(logits, dim=-1)
-    
 
     return int(torch.multinomial(probs, 1).item())
-

@@ -11,11 +11,13 @@ from project_poet.tokenizer import PoemTokenizer
 
 logger = logging.getLogger(__name__)
 
-def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None) -> tuple[DataLoader, DataLoader, PoemTokenizer]:
-    #Get data and split
+
+def get_dataloaders(
+    cfg: CFG, tokenizer: PoemTokenizer | None = None
+) -> tuple[DataLoader, DataLoader, PoemTokenizer]:
+    # Get data and split
     raw_df = pd.read_csv(cfg.data.data_path)
     train, val = split_dataframe(raw_df, cfg)
-
 
     if tokenizer is None:
         tokenizer = PoemTokenizer.load(cfg.tokenizer.save_path, cfg.tokenizer)
@@ -23,8 +25,11 @@ def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None) -> tuple[D
     else:
         tokenizer_source = "caller"
 
-    #Build Sequences
-    train_seq, val_seq = build_sequences(train, tokenizer, cfg.model.max_block_size), build_sequences(val, tokenizer, cfg.model.max_block_size)
+    # Build Sequences
+    train_seq, val_seq = (
+        build_sequences(train, tokenizer, cfg.model.max_block_size),
+        build_sequences(val, tokenizer, cfg.model.max_block_size),
+    )
 
     logger.info(
         "data %s | rows %s | train %s | val %s | batch %s | block %s | vocab %s | tokenizer %s",
@@ -38,13 +43,12 @@ def get_dataloaders(cfg: CFG, tokenizer: PoemTokenizer | None = None) -> tuple[D
         tokenizer_source,
     )
 
-    #Make Dataloaders
+    # Make Dataloaders
     collate = make_collate_fn(tokenizer.pad_id)
     train_dataloader = build_dataloader(train_seq, cfg, shuffle=True, collate_fn=collate)
     val_dataloader = build_dataloader(val_seq, cfg, shuffle=False, collate_fn=collate)
 
     return train_dataloader, val_dataloader, tokenizer
-
 
 
 def split_dataframe(df: pd.DataFrame, cfg: CFG) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -54,11 +58,14 @@ def split_dataframe(df: pd.DataFrame, cfg: CFG) -> tuple[pd.DataFrame, pd.DataFr
     return train, val
 
 
-
-def build_sequences(df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int) -> list[list[int]]:
+def build_sequences(
+    df: pd.DataFrame, tokenizer: PoemTokenizer, max_block_size: int
+) -> list[list[int]]:
     seq = [
-        tokenizer.encode_example(title, genre, poem)[:max_block_size] #MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
-        for title, genre, poem in zip(df["Title"], df["Genre"] , df["Poem"])
+        tokenizer.encode_example(title, genre, poem)[
+            :max_block_size
+        ]  # MAX BLOCK SIZE IS IMPLEMENTED HERE!!!
+        for title, genre, poem in zip(df["Title"], df["Genre"], df["Poem"])
     ]
     return seq
 
@@ -70,34 +77,34 @@ def build_dataloader(
     collate_fn: Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor]],
 ) -> DataLoader:
     dataset = PoemDataset(sequences)
-    ds_loader = DataLoader(dataset, batch_size=cfg.train.batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    ds_loader = DataLoader(
+        dataset, batch_size=cfg.train.batch_size, shuffle=shuffle, collate_fn=collate_fn
+    )
     return ds_loader
-
 
 
 class PoemDataset(Dataset):
     def __init__(self, sequences: list[list[int]]) -> None:
-        self.sequences = [
-            torch.tensor(seq, dtype=torch.long) for seq in sequences
-        ]
+        self.sequences = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
 
     def __len__(self) -> int:
         return len(self.sequences)
-    
+
     def __getitem__(self, idx: int) -> torch.Tensor:
         return self.sequences[idx]
 
 
-
-def make_collate_fn(pad_id: int) -> Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor]]:
+def make_collate_fn(
+    pad_id: int,
+) -> Callable[[list[torch.Tensor]], tuple[torch.Tensor, torch.Tensor]]:
     def collate_fn(batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         seq_x = [seq[:-1] for seq in batch]
         seq_y = [seq[1:] for seq in batch]
         x = pad_sequence(seq_x, batch_first=True, padding_value=pad_id)
         y = pad_sequence(seq_y, batch_first=True, padding_value=-100)
 
-        #pad_mask = x == pad_id --> no longer required!
+        # pad_mask = x == pad_id --> no longer required!
 
-        return x, y#, pad_mask
+        return x, y  # , pad_mask
 
     return collate_fn

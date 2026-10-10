@@ -5,5 +5,7 @@ from project_poet.model import PoetTransformer
 from project_poet.tokenizer import PoemTokenizer
 
 
-def get_model_and_config(path: str, device: torch.device) -> tuple[PoetTransformer, PoemTokenizer, CFG]:
+def get_model_and_config(
+    path: str, device: torch.device
+) -> tuple[PoetTransformer, PoemTokenizer, CFG]:
     return load_inference(path, device)

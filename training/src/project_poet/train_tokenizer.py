@@ -9,7 +9,7 @@ from project_poet.tokenizer import train_tokenizer
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "config.yaml"
 
 if __name__ == "__main__":
-    #Get data and split
+    # Get data and split
     cfg = get_config(CONFIG_PATH)
 
     raw_df = pd.read_csv(cfg.data.data_path)

@@ -2,12 +2,11 @@ To do:
 
 
 Part 4: Pre Hosting
-- Opus full checkup + Check I can run on AWS!
+- Opus full checkup
 
 
 Part 5: Hosting
-- Train Decent Model
-- Learn AWS
+- Any changes b4 AWS?
 - Host on AWS
 
 Part 6: Best Model

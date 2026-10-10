@@ -5,7 +5,7 @@ import torch
 import yaml
 
 
-@dataclass 
+@dataclass
 class Train:
     resume: bool
     model_path: str
@@ -17,7 +17,7 @@ class Train:
     batch_size: int
 
 
-@dataclass 
+@dataclass
 class Model:
     embedding_dim: int
     max_block_size: int
@@ -97,4 +97,3 @@ def get_device() -> torch.device:
 def set_seed(seed: int) -> None:
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    

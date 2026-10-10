@@ -41,11 +41,18 @@ if __name__ == "__main__":
         cfg = yaml_cfg
         train_dataloader, val_dataloader, tokenizer = get_dataloaders(cfg)
         model = PoetTransformer(cfg, tokenizer.vocab_size).to(device)
-        opt = torch.optim.AdamW(model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay)
+        opt = torch.optim.AdamW(
+            model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay
+        )
         start_epoch = 0
         train_loss_log = []
         eval_loss_log = []
-        logger.info("fresh model | vocab %s | layers %s | emb %s", tokenizer.vocab_size, cfg.model.n_layers, cfg.model.embedding_dim)
+        logger.info(
+            "fresh model | vocab %s | layers %s | emb %s",
+            tokenizer.vocab_size,
+            cfg.model.n_layers,
+            cfg.model.embedding_dim,
+        )
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
 

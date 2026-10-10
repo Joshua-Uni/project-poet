@@ -20,7 +20,9 @@ def test_encode_example_extends_the_prompt(tokenizer: PoemTokenizer):
     genre = "Love"
     title = "Hello"
     poem = "Hello World, how are you?"
-    assert tokenizer.encode_example(title, genre, poem) == tokenizer.prompt_ids(title, genre) + tokenizer.encode(poem) + [tokenizer.poem_end_id]
+    assert tokenizer.encode_example(title, genre, poem) == tokenizer.prompt_ids(
+        title, genre
+    ) + tokenizer.encode(poem) + [tokenizer.poem_end_id]
 
 
 def test_genre_tokens_are_registered(tokenizer: PoemTokenizer):
@@ -30,10 +32,12 @@ def test_genre_tokens_are_registered(tokenizer: PoemTokenizer):
 
 
 def test_bpe_sees_title_and_poem_only():
-    poem_df = pd.DataFrame({
-        "Title": ["Title", "Title 2"],
-        "Poem": ["Poem", "Poem 2"],
-        "Genre": ["Love", "Fear"],
-        "Love": [0.9, 0.1],
-    })
+    poem_df = pd.DataFrame(
+        {
+            "Title": ["Title", "Title 2"],
+            "Poem": ["Poem", "Poem 2"],
+            "Genre": ["Love", "Fear"],
+            "Love": [0.9, 0.1],
+        }
+    )
     assert list(_train_texts(poem_df)) == ["Title", "Poem", "Title 2", "Poem 2"]

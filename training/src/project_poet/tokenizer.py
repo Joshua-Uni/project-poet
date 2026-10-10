@@ -12,12 +12,15 @@ from project_poet.config import CFG
 from project_poet.config import Tokenizer as TokenizerCfg
 
 PAD_TOKEN = "<pad>"
-GENRES = {'Fear': '<FEAR>',
-          'Anger': '<ANGER>',
-          'Joy': "<JOY>",
-          'Sadness': "<SADNESS>",
-          'Love': "<LOVE>",
-          'Surprise': "<SURPRISE>"}
+GENRES = {
+    "Fear": "<FEAR>",
+    "Anger": "<ANGER>",
+    "Joy": "<JOY>",
+    "Sadness": "<SADNESS>",
+    "Love": "<LOVE>",
+    "Surprise": "<SURPRISE>",
+}
+
 
 class PoemTokenizer:
     def __init__(self, hf: Tokenizer, cfg: TokenizerCfg):
@@ -29,7 +32,6 @@ class PoemTokenizer:
         self.poem_start_id = hf.token_to_id(cfg.poem_start)
         self.poem_end_id = hf.token_to_id(cfg.poem_end)
         self.genre_id = {name: hf.token_to_id(token) for name, token in GENRES.items()}
-
 
     @property
     def vocab_size(self) -> int:

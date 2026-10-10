@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 def setup_logging(level: str = "INFO") -> None:
     """Configure logging once at app startup."""
     numeric_level = getattr(logging, level.upper(), logging.INFO)
-    
+
     handlers: list[logging.Handler] = [
         logging.StreamHandler(sys.stdout),  # print to terminal
     ]
