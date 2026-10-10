@@ -1,13 +1,13 @@
 To do:
 
 
-Saturday
-- Train model on GPU and rerun 
-
 Sunday
-- Read Me
+- Train a decent model in background on GPU!
 - Any changes b4 AWS?
 - Host on AWS
+
+Later
+- Read Me
 
 
 #ruff check training/src hosting/api/src
