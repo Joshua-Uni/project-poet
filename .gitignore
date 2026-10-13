@@ -14,6 +14,9 @@ __pycache__/
 .env
 .env.*
 
+# Personal notes
+notes.txt
+
 # Data (keep folders, ignore contents)
 data/raw/*
 !data/raw/.gitkeep
