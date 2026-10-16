@@ -5,11 +5,11 @@ from poet_api.schemas import GenerateRequest
 
 
 def test_request_defaults_leave_sampling_open():
-    # GenerateRequest(title='Night') has genre Love, temperature 1, max_tokens 100, top_k None, top_p None.
+    # GenerateRequest(title='Night') has genre Love, temperature 1, max_tokens 400, top_k None, top_p None.
     req = GenerateRequest(title="Night")
     assert req.genre == "Love"
     assert req.temperature == 1
-    assert req.max_tokens == 100
+    assert req.max_tokens == 400
     assert req.top_k is None
     assert req.top_p is None
 
@@ -32,7 +32,7 @@ def test_request_rejects_blank_title_and_unknown_genre():
 
 
 def test_request_bounds_on_sampling_knobs():
-    # top_k 0 and 10000 fail; 1 and 9999 pass. top_p 0 fails; 1 passes. temperature 0 fails. max_tokens 0 and 256 fail; 255 passes.
+    # top_k 0 and 10000 fail; 1 and 9999 pass. top_p 0 fails; 1 passes. temperature 0 fails. max_tokens 0 and 701 fail; 700 passes.
     # Omitted top_k and top_p stay None.
     with pytest.raises(ValueError):
         GenerateRequest(top_k=0)
@@ -51,8 +51,8 @@ def test_request_bounds_on_sampling_knobs():
     with pytest.raises(ValueError):
         GenerateRequest(max_tokens=0)
     with pytest.raises(ValueError):
-        GenerateRequest(max_tokens=256)
-    assert GenerateRequest(max_tokens=255).max_tokens == 255
+        GenerateRequest(max_tokens=701)
+    assert GenerateRequest(max_tokens=700).max_tokens == 700
 
     omitted = GenerateRequest(title="Night")
     assert omitted.top_k is None

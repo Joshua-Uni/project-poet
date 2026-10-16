@@ -8,7 +8,7 @@ class GenerateRequest(BaseModel):
         default="Love", description="One of Fear, Anger, Joy, Sadness, Love, Surprise"
     )
     temperature: float = Field(default=1, gt=0)
-    max_tokens: int = Field(default=100, gt=0, lt=256)
+    max_tokens: int = Field(default=400, gt=0, le=700)
     top_k: int | None = Field(default=None, gt=0, lt=10_000)
     top_p: float | None = Field(default=None, gt=0, le=1)
 
