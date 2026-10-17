@@ -15,10 +15,10 @@ train: #resume=true --> still used
   batch_size: 32
 
 model: #resume=true --> replaced with saved ckpt
-  embedding_dim: 256
+  embedding_dim: 384
   max_block_size: 768
-  n_layers: 6
-  n_head: 4
+  n_layers: 8
+  n_head: 6
   head_size: 64
   dropout: 0.2
 
