@@ -9,13 +9,15 @@ import yaml
 class Train:
     resume: bool
     model_path: str
+    best_path: str
     log_lvl: str
     learning_rate: float
+    warmup_steps: int
+    min_lr_ratio: float
     weight_decay: float
     max_norm: float
     epochs: int
     batch_size: int
-    best_path: str = "artifacts/best.pt"
 
 
 @dataclass

@@ -6,7 +6,9 @@ train: #resume=true --> still used
   model_path: "artifacts/ckpt.pt" # last epoch, used to resume
   best_path: "artifacts/best.pt" # lowest val loss, used by eval and the API
   log_lvl: INFO
-  learning_rate: 0.0006
+  learning_rate: 0.0006 # peak, reached at the end of warmup
+  warmup_steps: 200 # batches of linear warmup
+  min_lr_ratio: 0.1 # cosine decay ends at learning_rate * this
   weight_decay: 0.01 #adamW
   max_norm: 1.0 #Grad Clipping
   epochs: 40

@@ -6,6 +6,7 @@ from typing import Any
 import torch
 import torch.nn as nn
 from tokenizers import Tokenizer as HfTokenizer
+from torch.optim.lr_scheduler import LambdaLR
 
 from project_poet.config import CFG, cfg_from_dict
 from project_poet.model import PoetTransformer
@@ -29,6 +30,7 @@ def save_training(
     epoch: int,
     model: nn.Module,
     opt: torch.optim.Optimizer,
+    scheduler: LambdaLR,
     cfg: CFG,
     tokenizer: PoemTokenizer,
     train_loss: list[float],
@@ -42,6 +44,7 @@ def save_training(
             "epoch": epoch,  # last finished epoch (resume at epoch+1)
             "model": model.state_dict(),
             "optimizer": opt.state_dict(),  # AdamW’s moments; skip this and “resume” is a cold start
+            "scheduler": scheduler.state_dict(),  # last_epoch is the batch count so far
             "vocab_size": tokenizer.vocab_size,
             "cfg": asdict(cfg),  # rebuild the net with the same sizes
             "tokenizer": tokenizer.hf.to_str(),
@@ -91,7 +94,14 @@ def load_inference(
 def load_training(
     yaml_cfg: CFG, device: torch.device
 ) -> tuple[
-    PoetTransformer, torch.optim.Optimizer, PoemTokenizer, CFG, int, list[float], list[float]
+    PoetTransformer,
+    torch.optim.Optimizer,
+    PoemTokenizer,
+    CFG,
+    int,
+    int,
+    list[float],
+    list[float],
 ]:
     # Loads everything needed for training (everything in a checkpoint)
     # Replaces checkpoint configs .train and .data with yaml_cfg
@@ -102,13 +112,14 @@ def load_training(
         model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay
     )
     opt.load_state_dict(ckpt["optimizer"])
+    # The lr is left to the scheduler, which train.py rebuilds at start_step.
     for g in opt.param_groups:
-        g["lr"] = cfg.train.learning_rate
         g["weight_decay"] = cfg.train.weight_decay
     start_epoch = ckpt["epoch"] + 1
+    start_step = ckpt["scheduler"]["last_epoch"]
 
     logger.info(
-        "resume | %s | next epoch %s | lr %s | weight_decay %s | max_norm %s | vocab %s",
+        "resume | %s | next epoch %s | peak lr %s | weight_decay %s | max_norm %s | vocab %s",
         yaml_cfg.train.model_path,
         start_epoch,
         cfg.train.learning_rate,
@@ -116,4 +127,13 @@ def load_training(
         cfg.train.max_norm,
         tokenizer.vocab_size,
     )
-    return model, opt, tokenizer, cfg, start_epoch, ckpt["train_loss"], ckpt["eval_loss"]
+    return (
+        model,
+        opt,
+        tokenizer,
+        cfg,
+        start_epoch,
+        start_step,
+        ckpt["train_loss"],
+        ckpt["eval_loss"],
+    )

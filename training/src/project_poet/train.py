@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from project_poet.config import get_config, get_device, set_seed
 from project_poet.dataloader import get_dataloaders
-from project_poet.engine import eval_one_epoch, train_one_epoch
+from project_poet.engine import eval_one_epoch, train_one_epoch, warmup_cosine
 from project_poet.load import load_training, save_training
 from project_poet.logging import setup_logging
 from project_poet.model import PoetTransformer
@@ -33,9 +33,16 @@ if __name__ == "__main__":
     )
 
     if yaml_cfg.train.resume:
-        model, opt, tokenizer, cfg, start_epoch, train_loss_log, eval_loss_log = load_training(
-            yaml_cfg, device
-        )
+        (
+            model,
+            opt,
+            tokenizer,
+            cfg,
+            start_epoch,
+            start_step,
+            train_loss_log,
+            eval_loss_log,
+        ) = load_training(yaml_cfg, device)
         train_dataloader, val_dataloader, tokenizer = get_dataloaders(cfg, tokenizer)
     else:
         cfg = yaml_cfg
@@ -45,6 +52,7 @@ if __name__ == "__main__":
             model.parameters(), lr=cfg.train.learning_rate, weight_decay=cfg.train.weight_decay
         )
         start_epoch = 0
+        start_step = 0
         train_loss_log = []
         eval_loss_log = []
         logger.info(
@@ -54,25 +62,45 @@ if __name__ == "__main__":
             cfg.model.embedding_dim,
         )
 
+    total_steps = cfg.train.epochs * len(train_dataloader)
+    scheduler = warmup_cosine(opt, cfg.train, total_steps, start_step)
+    logger.info(
+        "schedule | step %s of %s | warmup %s | lr %.2e | floor %.2e",
+        start_step,
+        total_steps,
+        cfg.train.warmup_steps,
+        opt.param_groups[0]["lr"],
+        cfg.train.learning_rate * cfg.train.min_lr_ratio,
+    )
+
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     # Resume keeps the best val seen so far, so a later worse epoch does not replace best.pt.
     best_val = min(eval_loss_log) if eval_loss_log else float("inf")
 
     for epoch in range(start_epoch, cfg.train.epochs):
-        train_loss = train_one_epoch(model, cfg.train, train_dataloader, opt, loss_fn, device)
+        train_loss = train_one_epoch(
+            model, cfg.train, train_dataloader, opt, scheduler, loss_fn, device
+        )
         train_loss_log.append(train_loss)
 
         eval_loss = eval_one_epoch(model, val_dataloader, loss_fn, device)
         eval_loss_log.append(eval_loss)
-        logger.info("epoch %s | train %.4f | val %.4f", epoch, train_loss, eval_loss)
+        logger.info(
+            "epoch %s | train %.4f | val %.4f | lr %.2e",
+            epoch,
+            train_loss,
+            eval_loss,
+            opt.param_groups[0]["lr"],
+        )
 
-        save_training(epoch, model, opt, cfg, tokenizer, train_loss_log, eval_loss_log)
+        save_training(epoch, model, opt, scheduler, cfg, tokenizer, train_loss_log, eval_loss_log)
         if eval_loss < best_val:
             best_val = eval_loss
             save_training(
                 epoch,
                 model,
                 opt,
+                scheduler,
                 cfg,
                 tokenizer,
                 train_loss_log,

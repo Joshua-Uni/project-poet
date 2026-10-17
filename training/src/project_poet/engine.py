@@ -1,8 +1,33 @@
+import math
+
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
 from project_poet.config import Train as TrainCfg
+
+
+def warmup_cosine(
+    opt: torch.optim.Optimizer, train_cfg: TrainCfg, total_steps: int, start_step: int = 0
+) -> LambdaLR:
+    # Linear warmup to learning_rate, then cosine decay to learning_rate * min_lr_ratio.
+    # Stepped once per batch. total_steps comes from the current config, so changing epochs on
+    # resume reshapes the rest of the curve; start_step is where a resumed run picks it up.
+    warmup = train_cfg.warmup_steps
+    floor = train_cfg.min_lr_ratio
+
+    def factor(step: int) -> float:
+        if step < warmup:
+            return (step + 1) / warmup
+        # Clamped so a run past total_steps (epochs lowered on resume) stays at the floor.
+        progress = min(1.0, (step - warmup) / max(1, total_steps - warmup))
+        return floor + (1 - floor) * 0.5 * (1 + math.cos(math.pi * progress))
+
+    # The peak comes from the config, not the optimizer, whose lr is mid-schedule on resume.
+    for group in opt.param_groups:
+        group["initial_lr"] = train_cfg.learning_rate
+    return LambdaLR(opt, factor, last_epoch=start_step - 1)
 
 
 def train_one_epoch(
@@ -10,6 +35,7 @@ def train_one_epoch(
     train_cfg: TrainCfg,
     loader: DataLoader,
     opt: torch.optim.Optimizer,
+    scheduler: LambdaLR,
     loss_fn: nn.Module,
     device: torch.device,
 ) -> float:
@@ -25,6 +51,7 @@ def train_one_epoch(
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=train_cfg.max_norm)
         opt.step()
+        scheduler.step()
 
         batch_tokens = int((yb != -100).sum())
         total += loss.item() * batch_tokens
