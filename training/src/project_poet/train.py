@@ -96,15 +96,5 @@ if __name__ == "__main__":
         save_training(epoch, model, opt, scheduler, cfg, tokenizer, train_loss_log, eval_loss_log)
         if eval_loss < best_val:
             best_val = eval_loss
-            save_training(
-                epoch,
-                model,
-                opt,
-                scheduler,
-                cfg,
-                tokenizer,
-                train_loss_log,
-                eval_loss_log,
-                cfg.train.best_path,
-            )
+            save_training(epoch, model, opt, scheduler, cfg, tokenizer, train_loss_log, eval_loss_log, cfg.train.best_path)  # fmt: skip
             logger.info("best | epoch %s | val %.4f | %s", epoch, eval_loss, cfg.train.best_path)

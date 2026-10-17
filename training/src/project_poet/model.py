@@ -22,53 +22,31 @@ class FeedForward(nn.Module):
         return self.net(x)
 
 
-class Head(nn.Module):
-    def __init__(self, cfg: CFG):
-        super().__init__()
-        self.key = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
-        self.query = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
-        self.value = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
-
-        self.tril: torch.Tensor
-        # Rebuilt in __init__ from max_block_size, so it is not saved in the checkpoint.
-        self.register_buffer(
-            "tril",
-            torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size)),
-            persistent=False,
-        )
-        self.dropout = nn.Dropout(cfg.model.dropout)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        T = x.shape[1]
-        k = self.key(x)  # B,T,Hs
-        q = self.query(x)  # B,T,Hs
-        v = self.value(x)  # B,T,Hs
-
-        weights = q @ k.transpose(-2, -1)  # B,T,Hs @ B,Hs,T --> B,T,T
-        weights = weights * k.shape[-1] ** -0.5  # Normalise Weights
-        weights = weights.masked_fill(
-            self.tril[:T, :T] == 0, float("-inf")
-        )  # -inf at future token's
-        weights = F.softmax(weights, dim=-1)  # 0 at future tokens
-        weights = self.dropout(weights)
-
-        return weights @ v  # B,T,T @ B,T,Hs --> B,T,Hs
-
-
 class MultiHeadAttention(nn.Module):
     def __init__(self, cfg: CFG):
         super().__init__()
-        self.heads = nn.ModuleList([Head(cfg) for _ in range(cfg.model.n_head)])
-        self.proj = nn.Linear(cfg.model.head_size * cfg.model.n_head, cfg.model.embedding_dim)
+        self.n_head = cfg.model.n_head
+        self.head_size = cfg.model.head_size
+        # One linear for every head's query, key and value: [q heads | k heads | v heads].
+        self.qkv = nn.Linear(cfg.model.embedding_dim, 3 * self.n_head * self.head_size)
+        self.proj = nn.Linear(self.n_head * self.head_size, cfg.model.embedding_dim)
         object.__setattr__(self.proj, "is_residual_proj", True)
+        self.attn_dropout = cfg.model.dropout
         self.dropout = nn.Dropout(cfg.model.dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = torch.cat(
-            [h(x) for h in self.heads], dim=-1
-        )  # N_HEAD {B,T,Hs} concats across HS --> B,T,N_HEAD*HS
-        out = self.dropout(self.proj(out))  # B,T,N_HEAD*Hs @ N_HEAD*Hs, C --> B,T,C
-        return out
+        B, T, _ = x.shape
+        q, k, v = self.qkv(x).split(self.n_head * self.head_size, dim=-1)  # 3 x B,T,nH*Hs
+        q = q.view(B, T, self.n_head, self.head_size).transpose(1, 2)  # B,nH,T,Hs
+        k = k.view(B, T, self.n_head, self.head_size).transpose(1, 2)  # B,nH,T,Hs
+        v = v.view(B, T, self.n_head, self.head_size).transpose(1, 2)  # B,nH,T,Hs
+
+        # Functional call, so dropout must be disabled manually outside training.
+        out = F.scaled_dot_product_attention(
+            q, k, v, dropout_p=self.attn_dropout if self.training else 0.0, is_causal=True
+        )  # B,nH,T,Hs
+        out = out.transpose(1, 2).contiguous().view(B, T, self.n_head * self.head_size)
+        return self.dropout(self.proj(out))  # B,T,nH*Hs @ nH*Hs,C --> B,T,C
 
 
 class Block(nn.Module):
@@ -122,3 +100,41 @@ class PoetTransformer(nn.Module):
         logits = F.linear(x, self.token_embedding.weight)  # (B,T,C) @ (vocab,C).T --> (B,T,vocab)
 
         return logits
+
+
+# Reference: the explicit single-head attention this module replaces. Each head built and
+# stored the full T x T weight matrix, and MultiHeadAttention ran the heads one after another
+# and concatenated them. F.scaled_dot_product_attention computes the same result in one fused
+# kernel that never materialises the T x T matrix.
+#
+# class Head(nn.Module):
+#     def __init__(self, cfg: CFG):
+#         super().__init__()
+#         self.key = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
+#         self.query = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
+#         self.value = nn.Linear(cfg.model.embedding_dim, cfg.model.head_size)
+#
+#         self.tril: torch.Tensor
+#         # Rebuilt in __init__ from max_block_size, so it is not saved in the checkpoint.
+#         self.register_buffer(
+#             "tril",
+#             torch.tril(torch.ones(cfg.model.max_block_size, cfg.model.max_block_size)),
+#             persistent=False,
+#         )
+#         self.dropout = nn.Dropout(cfg.model.dropout)
+#
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         T = x.shape[1]
+#         k = self.key(x)  # B,T,Hs
+#         q = self.query(x)  # B,T,Hs
+#         v = self.value(x)  # B,T,Hs
+#
+#         weights = q @ k.transpose(-2, -1)  # B,T,Hs @ B,Hs,T --> B,T,T
+#         weights = weights * k.shape[-1] ** -0.5  # Normalise Weights
+#         weights = weights.masked_fill(
+#             self.tril[:T, :T] == 0, float("-inf")
+#         )  # -inf at future token's
+#         weights = F.softmax(weights, dim=-1)  # 0 at future tokens
+#         weights = self.dropout(weights)
+#
+#         return weights @ v  # B,T,T @ B,T,Hs --> B,T,Hs
